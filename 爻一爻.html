@@ -183,6 +183,7 @@
 
 <script src="yijing-data.js"></script>
 <script src="yijing-detail.js"></script>
+<script src="yijing-detail-en.js"></script>
 <script>
 /* ---------- 八经卦（自下而上 底,中,上；1阳0阴） ---------- */
 const TRI = {'111':'乾','110':'兑','101':'离','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};
@@ -349,14 +350,17 @@ function buildCats(){
 function setCat(k){cat=k;buildCats();if(lastCast) renderDetail();}
 function renderDetail(){
   const blk=document.getElementById('detailBlock');
-  if(typeof YI_DETAIL==='undefined'||!lastCast||!YI_DETAIL[lastCast.benNum]){blk.style.display='none';return;}
+  if(!lastCast){blk.style.display='none';return;}
+  const src=(lang==='en' && typeof YI_DETAIL_EN!=='undefined' && YI_DETAIL_EN[lastCast.benNum])
+            ? YI_DETAIL_EN[lastCast.benNum]
+            : (typeof YI_DETAIL!=='undefined' ? YI_DETAIL[lastCast.benNum] : null);
+  if(!src){blk.style.display='none';return;}
   blk.style.display='block';
-  const L=T[lang], d=YI_DETAIL[lastCast.benNum];
+  const L=T[lang], sep=(lang==='zh'?'：':': ');
   document.getElementById('detailTitle').textContent=L.detailTitle;
-  let html=`<div class="d-para">${d.detail}</div>`;
-  if(cat!=='general' && d[cat]) html+=`<div class="d-cat"><b>${L.catName[cat]}：</b>${d[cat]}</div>`;
-  if(d.advice) html+=`<div class="d-advice">▸ ${L.adviceLabel}：${d.advice}</div>`;
-  if(lang==='en'&&L.detailNote) html+=`<div class="d-note">${L.detailNote}</div>`;
+  let html=`<div class="d-para">${src.detail}</div>`;
+  if(cat!=='general' && src[cat]) html+=`<div class="d-cat"><b>${L.catName[cat]}${sep}</b>${src[cat]}</div>`;
+  if(src.advice) html+=`<div class="d-advice">▸ ${L.adviceLabel}${sep}${src.advice}</div>`;
   document.getElementById('detailBox').innerHTML=html;
 }
 
