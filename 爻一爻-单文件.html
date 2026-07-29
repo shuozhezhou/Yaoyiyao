@@ -112,6 +112,25 @@
   .rel-tag{display:inline-block;min-width:80px;color:var(--gold);font-size:12px;}
   .rel-sym{font-size:20px;line-height:1;}
   .rel-desc{color:var(--ink-dim);font-size:12px;flex:1;}
+  .method-row{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:12px;font-size:12px;color:var(--ink-dim);}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  .seg-btn{padding:5px 14px;cursor:pointer;color:var(--ink-dim);font-size:12px;user-select:none;}
+  .seg-btn.on{background:var(--gold-dim);color:#1a150c;}
+  #najiaWrap{margin-top:4px;}
+  #najiaWrap>summary{cursor:pointer;color:var(--gold);}
+  .najia-guide{font-size:12.5px;color:var(--ink);line-height:1.85;background:var(--panel2);border-radius:8px;padding:10px 12px;margin:10px 0;}
+  .najia-guide b{color:var(--gold);}
+  .nj-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0;}
+  .nj-table td{padding:5px 3px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  .nj-god{color:var(--ink-dim);}
+  .nj-qin{color:var(--gold);font-weight:600;}
+  .nj-bar{font-family:monospace;letter-spacing:-1px;color:var(--yang);}
+  .nj-mark{color:var(--accent);font-weight:bold;}
+  .nj-state{color:var(--ink-dim);font-size:10.5px;}
+  .nj-bian{color:var(--yin);font-size:11px;}
+  .nj-row-yong{background:rgba(201,165,90,.13);}
+  .najia-legend{font-size:11.5px;color:var(--ink-dim);line-height:1.8;margin-top:8px;}
+  .najia-legend b{color:var(--gold-dim);}
 </style>
 </head>
 <body>
@@ -133,6 +152,13 @@
       <div class="coin">爻</div><div class="coin">爻</div><div class="coin">爻</div>
     </div>
     <div class="status" id="status"></div>
+
+    <div class="method-row"><span id="methodLabel"></span>
+      <span class="seg">
+        <span class="seg-btn on" id="segCoin" onclick="setMethod('coin')"></span>
+        <span class="seg-btn" id="segYarrow" onclick="setMethod('yarrow')"></span>
+      </span>
+    </div>
 
     <div class="catlabel" id="catLabel"></div>
     <div class="cats" id="cats"></div>
@@ -172,6 +198,14 @@
       <div class="sect" id="relTitle"></div>
       <div class="rel" id="relBox"></div>
     </div>
+
+    <div class="divider"></div>
+    <details id="najiaWrap">
+      <summary class="sect" id="najiaSummary"></summary>
+      <div class="najia-guide" id="najiaGuide"></div>
+      <div id="najiaBox"></div>
+      <div class="najia-legend" id="najiaLegend"></div>
+    </details>
   </div>
 
   <div class="card">
@@ -191,8 +225,7 @@
 
 </div>
 
-<script>
-/* data */
+<script>/* data */
 /* 周易六十四卦数据 · 爻一爻
  * 字段：name 卦名 | en 英文名 | sym 卦画 | tri 上下卦 | triEn 英文上下卦
  *       gua 卦辞原文 | guaBai 卦辞白话 | guaEn 卦辞英译
@@ -1103,8 +1136,7 @@ const YI = {
 if (typeof module !== 'undefined' && module.exports) module.exports = YI;
 
 </script>
-<script>
-/* detail */
+<script>/* detail */
 /* 周易六十四卦 · 详解与分类断语（爻一爻）
  * 字段：detail 卦象综合详解 | career 事业 | love 感情 | wealth 财运 | health 健康 | advice 行动建议
  * 均为白话解读，仅供参考。
@@ -1626,8 +1658,7 @@ const YI_DETAIL = {
 if (typeof module !== 'undefined' && module.exports) module.exports = YI_DETAIL;
 
 </script>
-<script>
-/* detail-en */
+<script>/* detail-en */
 /* I Ching 64 hexagrams · English detailed reading (爻一爻)
  * Fields mirror yijing-detail.js: detail | career | love | wealth | health | advice
  * Plain-language interpretation, for reference only.
@@ -2182,6 +2213,7 @@ const T = {
    detailNote:"",
    relTitle:"延伸卦象",
    rel:{ hu:["互卦","事情发展的中间过程与内情"], cuo:["错卦","事情的反面、对立的可能"], zong:["综卦","换位·从对方或反向看"] },
+   methodLabel:"起卦法", methodCoin:"铜钱法", methodYarrow:"蓍草法",
    histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
    methodSummary:"起卦规则说明",
    transBtn:"EN · English",
@@ -2209,6 +2241,7 @@ const T = {
    detailNote:"",
    relTitle:"Related hexagrams",
    rel:{ hu:["Nuclear","the inner development / middle phase"], cuo:["Opposite","the reverse side / opposite possibility"], zong:["Reversed","the other side's / inverted view"] },
+   methodLabel:"Method", methodCoin:"Coin", methodYarrow:"Yarrow",
    histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
    methodSummary:"How the method works",
    transBtn:"中 · 中文",
@@ -2226,14 +2259,23 @@ let yaos = [];          // 每爻 {v}
 let lastCast = null;    // {ben:[1/0*6], ci:[], benNum, bianNum, q, cat, t}
 let cat = 'general';    // 当前所选解读类别
 
+/* ---------- 起卦法（铜钱法 / 蓍草法） ---------- */
+let method='coin';
+/* 蓍草(大衍)概率：老阴6=1/16, 少阳7=5/16, 少阴8=7/16, 老阳9=3/16 */
+function drawYarrow(){ const r=Math.random()*16; return r<1?6:r<6?7:r<13?8:9; }
+/* 由爻值反推三枚硬币的阳面数(6→0..9→3)，随机分布 */
+function facesForValue(v){ const k=v-6, arr=[false,false,false], idx=[0,1,2]; for(let n=0;n<k;n++){const j=Math.floor(Math.random()*idx.length); arr[idx[j]]=true; idx.splice(j,1);} return arr; }
+function setMethod(m){ method=m; document.getElementById('segCoin').classList.toggle('on',m==='coin'); document.getElementById('segYarrow').classList.toggle('on',m==='yarrow'); }
+
 /* ---------- 起卦 ---------- */
 function toss(){
   if(yaos.length>=6) return;
   const coins=[...document.querySelectorAll('.coin')];
-  let sum=0; const faces=[];
-  coins.forEach(c=>{const yang=Math.random()<0.5;faces.push(yang);sum+=yang?3:2;
-    c.classList.remove('flip');void c.offsetWidth;c.classList.add('flip');});
-  const v=sum; // 6..9
+  let faces;
+  if(method==='yarrow'){ faces=facesForValue(drawYarrow()); }
+  else { faces=coins.map(()=>Math.random()<0.5); }
+  const v=6+faces.reduce((s,f)=>s+(f?1:0),0); // 6..9
+  coins.forEach(c=>{c.classList.remove('flip');void c.offsetWidth;c.classList.add('flip');});
   setTimeout(()=>{coins.forEach((c,i)=>{c.className='coin flip '+(faces[i]?'yang':'yin');
     c.textContent=faces[i]?(lang==='zh'?'阳':'⚊'):(lang==='zh'?'阴':'⚋');});},250);
 
@@ -2321,6 +2363,84 @@ function renderRel(){
   document.getElementById('relBox').innerHTML=row('hu',r.hu)+row('cuo',r.cuo)+row('zong',r.zong);
 }
 
+/* ===================== 六爻纳甲（火珠林） ===================== */
+const TRIBITS={乾:[1,1,1],兑:[1,1,0],离:[1,0,1],震:[1,0,0],巽:[0,1,1],坎:[0,1,0],艮:[0,0,1],坤:[0,0,0]};
+const PALACE_ELEM={乾:'金',兑:'金',离:'火',震:'木',巽:'木',坎:'水',艮:'土',坤:'土'};
+const NJ_PALACES=['乾','兑','离','震','巽','坎','艮','坤'];
+/* 纳甲地支（子0..亥11）：下卦取 inner、上卦取 outer */
+const NAJIA_ZHI={
+ 乾:{inner:[0,2,4],outer:[6,8,10]}, 坤:{inner:[7,5,3],outer:[1,11,9]},
+ 震:{inner:[0,2,4],outer:[6,8,10]}, 坎:{inner:[2,4,6],outer:[8,10,0]},
+ 艮:{inner:[4,6,8],outer:[10,0,2]}, 巽:{inner:[1,11,9],outer:[7,5,3]},
+ 离:{inner:[3,1,11],outer:[9,7,5]}, 兑:{inner:[5,3,1],outer:[11,9,7]}
+};
+const ZHI_ELEM=['水','土','木','木','土','火','火','土','金','金','土','水']; // 子丑寅卯辰巳午未申酉戌亥
+const SHENG={木:'火',火:'土',土:'金',金:'水',水:'木'};
+const KE={木:'土',土:'水',水:'火',火:'金',金:'木'};
+const LIUSHEN=['青龙','朱雀','勾陈','螣蛇','白虎','玄武'];
+const QIN_EN={父母:'Parent',官鬼:'Officer',妻财:'Wealth',子孙:'Offspring',兄弟:'Sibling'};
+const SHEN_EN={青龙:'Azure Dragon',朱雀:'Vermilion Bird',勾陈:'Hook-Snake',螣蛇:'Coiling Snake',白虎:'White Tiger',玄武:'Black Tortoise'};
+const ELEM_EN={金:'Metal',木:'Wood',水:'Water',火:'Fire',土:'Earth'};
+const STATE_EN={旺:'Prosperous',相:'Strong',休:'Resting',囚:'Trapped',死:'Dead',临:'On-day',冲:'Clash',日比:'Peer',日生:'Day-gen',泄:'Drains',日克:'Day-ctrl',耗:'Cost'};
+const YONG_CAT={ general:['世'], career:['官鬼'], wealth:['妻财'], love:['妻财','官鬼'], health:['官鬼','子孙'] };
+const NAJIA_INFO={};
+(function(){ // 京房八宫：本宫→一世..五世→游魂→归魂
+  const worldByPos=[6,1,2,3,4,5,4,3], respByPos=[3,4,5,6,1,2,1,6];
+  const flipSets=[[],[0],[0,1],[0,1,2],[0,1,2,3],[0,1,2,3,4],[0,1,2,4],[4]];
+  NJ_PALACES.forEach(t=>{const p=TRIBITS[t], pure=[...p,...p];
+    flipSets.forEach((fs,si)=>{const L=pure.slice(); fs.forEach(b=>L[b]=L[b]?0:1);
+      const num=KEY2NUM[guaKey(L)];
+      NAJIA_INFO[num]={palace:t,elem:PALACE_ELEM[t],world:worldByPos[si],resp:respByPos[si]};});});
+})();
+function liuqin(P,E){ if(E===P)return'兄弟'; if(SHENG[E]===P)return'父母'; if(SHENG[P]===E)return'子孙'; if(KE[E]===P)return'官鬼'; return'妻财'; }
+function startShen(stem){ return [0,0,1,1,2,3,4,4,5,5][stem]; }
+function wangShuai(Me,e){ if(e===Me)return'旺'; if(SHENG[Me]===e)return'相'; if(SHENG[e]===Me)return'休'; if(KE[e]===Me)return'囚'; return'死'; }
+function riChen(De,e,db,eb){ if(eb===db)return'临'; if((eb+6)%12===db)return'冲'; if(De===e)return'日比'; if(SHENG[De]===e)return'日生'; if(SHENG[e]===De)return'泄'; if(KE[De]===e)return'日克'; return'耗'; }
+const NJ_JIE=[6,4,6,5,6,6,7,8,8,8,7,7];             // 各月节气约日
+const NJ_MB=[1,2,3,4,5,6,7,8,9,10,11,0];            // 交节后的月支
+function monthBranch(m,d){ return d>=NJ_JIE[m-1]?NJ_MB[m-1]:NJ_MB[(m-2+12)%12]; }
+function njBranches(lines){ const lo=TRI[''+lines[0]+lines[1]+lines[2]], up=TRI[''+lines[3]+lines[4]+lines[5]]; return [...NAJIA_ZHI[lo].inner,...NAJIA_ZHI[up].outer]; }
+
+function renderNajia(){
+  const wrap=document.getElementById('najiaWrap');
+  if(typeof YI==='undefined'||!lastCast||!lastCast.gz||!NAJIA_INFO[lastCast.benNum]){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const zh=lang==='zh', info=NAJIA_INFO[lastCast.benNum], P=info.elem;
+  const g=lastCast.gz, dStem=g.d%10, dBranch=g.d%12, dEl=ZHI_ELEM[dBranch];
+  const dt=new Date(g.iso), mb=monthBranch(dt.getMonth()+1,dt.getDate()), mEl=ZHI_ELEM[mb], st=startShen(dStem);
+  const benB=njBranches(lastCast.ben);
+  const bianLines=lastCast.ben.map((b,i)=>lastCast.ci.includes(i)?(b?0:1):b);
+  const bianB=njBranches(bianLines);
+  const zname=b=>zh?ZHI[b]:ZHI_EN[b], en_el=e=>zh?e:ELEM_EN[e], en_qin=q=>zh?q:QIN_EN[q], en_sh=s=>zh?s:SHEN_EN[s], en_st=s=>zh?s:(STATE_EN[s]||s);
+  const yong=YONG_CAT[cat]||['世'];
+  document.getElementById('najiaSummary').textContent=zh?'六爻纳甲盘（进阶）':'Najia chart (advanced)';
+  let rows='';
+  for(let i=5;i>=0;i--){
+    const e=ZHI_ELEM[benB[i]], qin=liuqin(P,e), god=LIUSHEN[(st+i)%6], yang=lastCast.ben[i], changing=lastCast.ci.includes(i);
+    const mk=info.world===i+1?(zh?'世':'W'):info.resp===i+1?(zh?'应':'R'):'';
+    const ws=wangShuai(mEl,e), rc=riChen(dEl,e,dBranch,benB[i]);
+    const isYong=yong.includes(qin)||(yong.includes('世')&&info.world===i+1);
+    let bianCell='';
+    if(changing){const be=ZHI_ELEM[bianB[i]], bq=liuqin(P,be); bianCell=`<span class="nj-bian">→ ${zname(bianB[i])}${en_el(be)} ${en_qin(bq)}</span>`;}
+    rows+=`<tr class="${isYong?'nj-row-yong':''}"><td class="nj-god">${en_sh(god)}</td>`+
+      `<td class="nj-qin">${en_qin(qin)}</td>`+
+      `<td>${zname(benB[i])}${en_el(e)}</td>`+
+      `<td class="nj-bar">${yang?'━━━':'━ ━'}</td>`+
+      `<td class="nj-mark">${changing?(yang?'○':'×'):''}${mk?' '+mk:''}</td>`+
+      `<td class="nj-state">${en_st(ws)}·${en_st(rc)}</td>`+
+      `<td>${bianCell}</td></tr>`;
+  }
+  document.getElementById('najiaBox').innerHTML=`<table class="nj-table">${rows}</table>`;
+  const mgz=zh?ZHI[mb]:ZHI_EN[mb], dgz=zh?GAN[dStem]+ZHI[dBranch]:GAN_EN[dStem]+ZHI_EN[dBranch];
+  const yongTxt=yong.map(q=>q==='世'?(zh?'世爻(自身)':'World (self)'):en_qin(q)).join(zh?'、':' / ');
+  document.getElementById('najiaGuide').innerHTML=zh
+    ? `本卦属 <b>${info.palace}宫 · ${info.elem}</b>；月建 <b>${mgz}</b>、日辰 <b>${dgz}</b>。本次「${T.zh.catName[cat]}」以 <b>${yongTxt}</b> 为用神；世爻在第 <b>${info.world}</b> 爻。`
+    : `Primary is of the <b>${info.palace} palace · ${ELEM_EN[info.elem]}</b>; month branch <b>${mgz}</b>, day <b>${dgz}</b>. For "${T.en.catName[cat]}" the use-spirit is <b>${yongTxt}</b>; the World line is line <b>${info.world}</b>.`;
+  document.getElementById('najiaLegend').innerHTML=zh
+    ? `<b>读法：</b>用神宜旺相、得日月或动爻生扶则吉；若休囚死、受克、逢冲则不利。世为己、应为对方；○/× 为动爻（→ 化出之爻）。列序：六神·六亲·地支五行·爻象·世应/动·月令旺衰·日辰生克。应期多在用神值日值月、或冲空填实之时。（纳甲基础盘，进阶参考，不含伏神）`
+    : `<b>How to read:</b> a use-spirit that is prosperous/strong and aided by the month, day, or a moving line is favorable; if resting/trapped/dead, controlled, or clashed, unfavorable. World = self, Response = the other; ○/× marks a moving line (→ what it becomes). Columns: spirit · relation · branch+element · line · world/response & motion · month-state · day-relation. Timing often falls on the day or month of the use-spirit. (Basic Najia chart, advanced reference; hidden spirits not shown.)`;
+}
+
 function finish(){
   const ben=yaos.map(y=>(y.v===7||y.v===9)?1:0);
   const ci=yaos.map((y,i)=>(y.v===6||y.v===9)?i:-1).filter(i=>i>=0);
@@ -2361,7 +2481,7 @@ function buildCats(){
   document.getElementById('cats').innerHTML=L.cats.map(([label,key])=>
     `<span class="cat${key===cat?' on':''}" onclick="setCat('${key}')">${label}</span>`).join('');
 }
-function setCat(k){cat=k;buildCats();if(lastCast) renderDetail();}
+function setCat(k){cat=k;buildCats();if(lastCast){renderDetail();renderNajia();}}
 function renderDetail(){
   const blk=document.getElementById('detailBlock');
   if(!lastCast){blk.style.display='none';return;}
@@ -2411,6 +2531,7 @@ function renderResult(){
   document.getElementById('ruleBox').innerHTML=readingRule(lastCast.ci,bh,xh);
   renderDetail();
   renderRel();
+  renderNajia();
   document.getElementById('result').classList.add('show');
 }
 
@@ -2505,6 +2626,9 @@ function applyLang(){
   document.getElementById('methodBody').innerHTML=L.method;
   document.getElementById('transBtn').textContent=L.transBtn;
   document.getElementById('verdictTitle').textContent=L.verdict;
+  document.getElementById('methodLabel').textContent=L.methodLabel;
+  document.getElementById('segCoin').textContent=L.methodCoin;
+  document.getElementById('segYarrow').textContent=L.methodYarrow;
   if(yaos.length===0) document.getElementById('status').textContent=L.start;
   labelYaoIdx();
   buildCats();
