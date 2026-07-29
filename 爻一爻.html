@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>爻一爻 · 周易金钱卦</title>
+<meta name="theme-color" content="#12100c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="爻一爻">
+<style>
+  :root{
+    --bg:#12100c; --panel:#1c1812; --panel2:#241f17; --line:#3a3327;
+    --gold:#c9a55a; --gold-dim:#8a7440; --ink:#e9e2d2; --ink-dim:#a99e86;
+    --yang:#d9b872; --yin:#8f8468; --accent:#c0492f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:radial-gradient(circle at 50% -10%,#241d13 0%,var(--bg) 60%);
+    color:var(--ink);font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+    min-height:100vh;display:flex;justify-content:center;padding:20px 14px 60px;}
+  .app{width:100%;max-width:460px;}
+  header{text-align:center;margin:8px 0 18px;}
+  header h1{margin:0;font-size:30px;letter-spacing:8px;color:var(--gold);font-weight:600;}
+  header p{margin:6px 0 0;font-size:12px;letter-spacing:2px;color:var(--ink-dim);}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:18px 16px;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+
+  .hexwrap{display:flex;justify-content:center;gap:34px;}
+  .hexcol{display:flex;flex-direction:column-reverse;gap:9px;align-items:center;}
+  .hexcol .label{font-size:12px;color:var(--gold-dim);letter-spacing:2px;margin-top:4px;order:99;}
+  .yao{width:150px;height:16px;display:flex;gap:12px;position:relative;opacity:.18;
+    transition:opacity .4s ease, transform .4s ease;transform:translateY(6px);}
+  .yao.on{opacity:1;transform:translateY(0);}
+  .bar{background:linear-gradient(180deg,var(--yang),#b8945a);border-radius:3px;height:100%;box-shadow:0 1px 2px rgba(0,0,0,.4);}
+  .yao.yang .bar{flex:1;}
+  .yao.yin .bar{flex:1;background:linear-gradient(180deg,var(--yin),#6f664e);}
+  .yao .mark{position:absolute;right:-24px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--accent);font-weight:bold;}
+  .yao .idx{position:absolute;left:-30px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--ink-dim);white-space:nowrap;}
+
+  .coins{display:flex;justify-content:center;gap:16px;margin:20px 0 6px;height:56px;align-items:center;}
+  .coin{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:20px;border:2px solid var(--gold-dim);
+    background:radial-gradient(circle at 35% 30%,#3a3120,#211b12);color:var(--gold);
+    box-shadow:inset 0 0 6px rgba(0,0,0,.6);transition:transform .1s;}
+  .coin.flip{animation:flip .5s ease;}
+  @keyframes flip{0%{transform:rotateY(0) scale(1);}50%{transform:rotateY(540deg) scale(1.15);}100%{transform:rotateY(1080deg) scale(1);}}
+  .coin.yang{border-color:var(--gold);color:var(--yang);}
+  .coin.yin{border-color:#5c5342;color:var(--yin);}
+
+  .qinput{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    color:var(--ink);font-family:inherit;font-size:14px;padding:10px 12px;margin-bottom:12px;}
+  .qinput::placeholder{color:var(--ink-dim);}
+  .status{text-align:center;font-size:13px;color:var(--ink-dim);min-height:20px;letter-spacing:1px;margin-bottom:12px;}
+
+  .btnrow{display:flex;gap:10px;}
+  button{padding:14px;border:none;border-radius:12px;font-size:16px;letter-spacing:3px;font-family:inherit;cursor:pointer;transition:.2s;}
+  .btn-main{flex:1;background:linear-gradient(180deg,var(--gold),#a9863f);color:#1a150c;font-weight:600;box-shadow:0 4px 14px rgba(201,165,90,.3);}
+  .btn-main:active{transform:translateY(1px);}
+  .btn-main:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+  .btn-reset{background:transparent;border:1px solid var(--line);color:var(--ink-dim);flex:0 0 88px;}
+
+  #result{display:none;}
+  #result.show{display:block;animation:fade .5s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .gua-title{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px;}
+  .gua-title .big{font-size:22px;color:var(--gold);letter-spacing:3px;}
+  .gua-title .sym{font-size:30px;line-height:1;}
+  .gua-sub{font-size:13px;color:var(--ink-dim);margin-bottom:6px;letter-spacing:1px;}
+  .gua-text{font-size:15px;line-height:1.9;color:var(--ink);}
+  .gua-text .bai{display:block;color:var(--ink-dim);font-size:13px;margin-top:2px;}
+  .xiang{font-size:13px;color:var(--gold-dim);margin-top:6px;font-style:normal;}
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+  .rule{background:var(--panel2);border-left:3px solid var(--gold);padding:12px 14px;border-radius:6px;font-size:14px;line-height:1.9;color:var(--ink);margin-top:8px;}
+  .rule b{color:var(--gold);}
+  .rule .yaoline{margin:6px 0;padding-left:8px;border-left:2px solid var(--gold-dim);}
+  .rule .yaoline .bai{display:block;color:var(--ink-dim);font-size:12.5px;}
+  .sect{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:2px;}
+
+  .catlabel{font-size:12px;color:var(--gold-dim);letter-spacing:1px;margin-bottom:8px;}
+  .cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .cat{font-size:13px;padding:6px 14px;border:1px solid var(--line);border-radius:20px;color:var(--ink-dim);cursor:pointer;transition:.15s;user-select:none;}
+  .cat.on{border-color:var(--gold);color:var(--gold);background:rgba(201,165,90,.1);}
+  .detailbox{font-size:14px;line-height:1.95;color:var(--ink);}
+  .detailbox .d-para{margin:2px 0 10px;}
+  .detailbox .d-cat{background:var(--panel2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:6px;margin:8px 0;}
+  .detailbox .d-cat b{color:var(--gold);}
+  .detailbox .d-advice{color:var(--gold-dim);margin-top:6px;}
+  .detailbox .d-note{color:var(--ink-dim);font-size:12px;}
+  .hist-item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px;cursor:pointer;transition:.15s;}
+  .hist-item:hover{border-color:var(--gold-dim);}
+  .hist-item .h1{font-size:14px;color:var(--gold);}
+  .hist-item .h2{font-size:11px;color:var(--ink-dim);margin-top:2px;}
+  .hist-empty{font-size:12px;color:var(--ink-dim);margin-top:8px;}
+  .hist-head{display:flex;justify-content:space-between;align-items:center;}
+  .link{background:none;border:none;color:var(--ink-dim);font-size:12px;padding:4px 8px;letter-spacing:1px;cursor:pointer;}
+  .link:hover{color:var(--gold);}
+
+  details summary{cursor:pointer;color:var(--gold-dim);font-size:12px;letter-spacing:1px;outline:none;}
+  .method{font-size:11.5px;color:var(--ink-dim);line-height:1.85;letter-spacing:.3px;margin-top:10px;}
+  .method b{color:var(--gold-dim);}
+
+  .transbar{text-align:center;margin-top:6px;}
+  .btn-trans{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-size:13px;letter-spacing:2px;padding:10px 24px;border-radius:24px;}
+  .btn-trans:active{transform:translateY(1px);}
+  .warn{color:var(--accent);font-size:12px;text-align:center;margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>爻 一 爻</h1>
+    <p id="subtitle"></p>
+  </header>
+
+  <div class="card">
+    <div id="dataWarn" class="warn" style="display:none"></div>
+    <div class="hexwrap">
+      <div class="hexcol" id="benCol"><div class="label" id="benLabel"></div></div>
+      <div class="hexcol" id="bianCol" style="opacity:.3"><div class="label" id="bianLabel"></div></div>
+    </div>
+
+    <div class="coins" id="coins">
+      <div class="coin">爻</div><div class="coin">爻</div><div class="coin">爻</div>
+    </div>
+    <div class="status" id="status"></div>
+
+    <div class="catlabel" id="catLabel"></div>
+    <div class="cats" id="cats"></div>
+    <input class="qinput" id="qInput" type="text" maxlength="60">
+    <div class="btnrow">
+      <button class="btn-main" id="tossBtn" onclick="toss()"><span id="tossText"></span>　<span id="step">(1/6)</span></button>
+      <button class="btn-reset" id="resetBtn" onclick="resetAll()"></button>
+    </div>
+  </div>
+
+  <div class="card" id="result">
+    <div class="gua-title"><span class="big" id="benName"></span><span class="sym" id="benSym"></span></div>
+    <div class="gua-sub" id="benSub"></div>
+    <div class="gua-text" id="benText"></div>
+    <div class="xiang" id="benXiang"></div>
+
+    <div id="detailBlock">
+      <div class="divider"></div>
+      <div class="sect" id="detailTitle"></div>
+      <div class="detailbox" id="detailBox"></div>
+    </div>
+
+    <div id="bianBlock">
+      <div class="divider"></div>
+      <div class="gua-title"><span class="big" id="bianName"></span><span class="sym" id="bianSym"></span></div>
+      <div class="gua-sub" id="bianSub"></div>
+      <div class="gua-text" id="bianText"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sect" id="verdictTitle"></div>
+    <div class="rule" id="ruleBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="hist-head">
+      <div class="sect" id="histTitle"></div>
+      <button class="link" id="clearBtn" onclick="clearHistory()"></button>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary id="methodSummary"></summary>
+      <div class="method" id="methodBody"></div>
+    </details>
+  </div>
+
+  <div class="transbar">
+    <button class="btn-trans" id="transBtn" onclick="toggleLang()"></button>
+  </div>
+</div>
+
+<script src="yijing-data.js"></script>
+<script src="yijing-detail.js"></script>
+<script>
+/* ---------- 八经卦（自下而上 底,中,上；1阳0阴） ---------- */
+const TRI = {'111':'乾','110':'兑','101':'离','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};
+/* 下卦名+上卦名 -> 卦序 */
+const KEY2NUM = {
+ "乾乾":1,"坤坤":2,"震坎":3,"坎艮":4,"乾坎":5,"坎乾":6,"坎坤":7,"坤坎":8,"乾巽":9,"兑乾":10,
+ "乾坤":11,"坤乾":12,"离乾":13,"乾离":14,"艮坤":15,"坤震":16,"震兑":17,"巽艮":18,"兑坤":19,"坤巽":20,
+ "震离":21,"离艮":22,"坤艮":23,"震坤":24,"震乾":25,"乾艮":26,"震艮":27,"巽兑":28,"坎坎":29,"离离":30,
+ "艮兑":31,"巽震":32,"艮乾":33,"乾震":34,"坤离":35,"离坤":36,"离巽":37,"兑离":38,"艮坎":39,"坎震":40,
+ "兑艮":41,"震巽":42,"乾兑":43,"巽乾":44,"坤兑":45,"巽坤":46,"坎兑":47,"巽坎":48,"离兑":49,"巽离":50,
+ "震震":51,"艮艮":52,"艮巽":53,"兑震":54,"离震":55,"艮离":56,"巽巽":57,"兑兑":58,"坎巽":59,"兑坎":60,
+ "兑巽":61,"艮震":62,"离坎":63,"坎离":64
+};
+
+/* ---------- 界面文案（中/英） ---------- */
+const T = {
+ zh:{
+   htmlLang:"zh-CN",
+   subtitle:"三 枚 铜 钱 · 六 掷 成 卦",
+   ben:"本卦", bian:"变卦",
+   toss:"掷 卦", reset:"重来",
+   qph:"所问何事？（可选，会记入卦例）",
+   start:"点击「掷卦」，从初爻起，共六掷",
+   done:"六爻已成，正在解卦…",
+   verdict:"占断 · 读卦法",
+   catLabel:"想问哪方面？（决定下面的分类解读）",
+   detailTitle:"卦象详解",
+   adviceLabel:"行动建议",
+   cats:[["综合","general"],["事业","career"],["感情","love"],["财运","wealth"],["健康","health"]],
+   catName:{general:"综合",career:"事业",love:"感情",wealth:"财运",health:"健康"},
+   detailNote:"",
+   histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
+   methodSummary:"起卦规则说明",
+   transBtn:"EN · English",
+   yaoNum:["初","二","三","四","五","上"],
+   guaWord:"卦",
+   throwMsg:(n,name,sum,lab)=>`第${n}掷 · ${name}爻 · 得 ${sum}（${lab}）`,
+   labels:{6:"老阴 变",7:"少阳",8:"少阴",9:"老阳 变"},
+   noQ:"（未记录所问）",
+   method:`<b>金钱卦法：</b>每掷取三枚铜钱，<b>正面(阳)计3、反面(阴)计2</b>，三枚相加：<br>· 6 = 老阴（阴变阳）× &nbsp;· 7 = 少阳（阳）<br>· 8 = 少阴（阴）&nbsp;· 9 = 老阳（阳变阴）○<br>自下而上掷六次为初、二、三、四、五、上爻。凡老阴、老阳为<b>变爻</b>，据此得<b>本卦</b>（当下）与<b>变卦</b>（趋向）。<br><br><b>读卦规则（依变爻数）：</b><br>0变：本卦卦辞　1变：本卦该变爻爻辞<br>2变：本卦二变爻，以上爻为主　3变：本、变卦卦辞并读，本为主<br>4变：变卦二不变爻，以下爻为主　5变：变卦唯一不变爻爻辞<br>6变：乾坤用九/用六，余卦取变卦卦辞`
+ },
+ en:{
+   htmlLang:"en",
+   subtitle:"Three coins · six casts",
+   ben:"Primary", bian:"Changing",
+   toss:"Cast", reset:"Reset",
+   qph:"Your question (optional, saved with the record)",
+   start:"Tap “Cast” to begin — six casts, bottom line first.",
+   done:"Six lines complete — interpreting…",
+   verdict:"Reading",
+   catLabel:"Which area is your question about?",
+   detailTitle:"Detailed reading",
+   adviceLabel:"Advice",
+   cats:[["General","general"],["Career","career"],["Love","love"],["Wealth","wealth"],["Health","health"]],
+   catName:{general:"General",career:"Career",love:"Love",wealth:"Wealth",health:"Health"},
+   detailNote:"详解暂为中文 · detailed reading is in Chinese only",
+   histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
+   methodSummary:"How the method works",
+   transBtn:"中 · 中文",
+   yaoNum:["1st","2nd","3rd","4th","5th","top"],
+   guaWord:"",
+   throwMsg:(n,name,sum,lab)=>`Cast ${n} · ${name} line · total ${sum} (${lab})`,
+   labels:{6:"old yin · changing",7:"young yang",8:"young yin",9:"old yang · changing"},
+   noQ:"(no question recorded)",
+   method:`<b>Three-coin method:</b> each cast throws three coins; <b>a yang face = 3, a yin face = 2</b>. The sum of three coins:<br>· 6 = old yin (yin→yang) × &nbsp;· 7 = young yang<br>· 8 = young yin &nbsp;· 9 = old yang (yang→yin) ○<br>Cast six times from the bottom up. Old-yin and old-yang lines are <b>changing lines</b>, producing the <b>Primary</b> hexagram (the present) and the <b>Changing</b> hexagram (the tendency).<br><br><b>Reading rules (by number of changing lines):</b><br>0: Primary judgment　1: text of that changing line<br>2: both changing lines, upper one governs　3: both judgments, Primary governs<br>4: the two unchanging lines of the Changing hexagram, lower governs<br>5: the single unchanging line of the Changing hexagram<br>6: Qian/Kun use the “all-nines/all-sixes” text; otherwise the Changing hexagram's judgment`
+ }
+};
+
+let lang = 'zh';
+let yaos = [];          // 每爻 {v}
+let lastCast = null;    // {ben:[1/0*6], ci:[], benNum, bianNum, q, cat, t}
+let cat = 'general';    // 当前所选解读类别
+
+/* ---------- 起卦 ---------- */
+function toss(){
+  if(yaos.length>=6) return;
+  const coins=[...document.querySelectorAll('.coin')];
+  let sum=0; const faces=[];
+  coins.forEach(c=>{const yang=Math.random()<0.5;faces.push(yang);sum+=yang?3:2;
+    c.classList.remove('flip');void c.offsetWidth;c.classList.add('flip');});
+  const v=sum; // 6..9
+  setTimeout(()=>{coins.forEach((c,i)=>{c.className='coin flip '+(faces[i]?'yang':'yin');
+    c.textContent=faces[i]?(lang==='zh'?'阳':'⚊'):(lang==='zh'?'阴':'⚋');});},250);
+
+  const idx=yaos.length;
+  yaos.push({v});
+  drawYaoPair(idx,v);
+  const L=T[lang];
+  document.getElementById('status').textContent=L.throwMsg(idx+1,L.yaoNum[idx],v,L.labels[v]);
+  document.getElementById('step').textContent = yaos.length<6?`(${yaos.length+1}/6)`:'';
+  if(yaos.length===6){
+    document.getElementById('tossBtn').disabled=true;
+    document.getElementById('status').textContent=L.done;
+    setTimeout(finish,600);
+  }
+}
+
+function drawYaoPair(idx,v){
+  const yang=(v===7||v===9), changing=(v===6||v===9);
+  addBar('benCol',idx,yang,changing,v);
+  addBar('bianCol',idx, changing?!yang:yang, false, null);
+  document.getElementById('bianCol').style.opacity='1';
+}
+function addBar(colId,idx,yang,changing,v){
+  const col=document.getElementById(colId);
+  const el=document.createElement('div');
+  el.className='yao on '+(yang?'yang':'yin');
+  el.style.order=idx;
+  el.innerHTML= yang?'<div class="bar"></div>':'<div class="bar"></div><div class="bar"></div>';
+  if(colId==='benCol'){
+    el.innerHTML+=`<span class="idx" data-yao="${idx}"></span>`;
+    if(changing) el.innerHTML+=`<span class="mark">${v===9?'○':'×'}</span>`;
+  }
+  col.appendChild(el);
+  labelYaoIdx();
+}
+function labelYaoIdx(){
+  document.querySelectorAll('#benCol .idx').forEach(s=>{
+    s.textContent=T[lang].yaoNum[+s.dataset.yao];
+  });
+}
+
+function guaKey(lines){return TRI[''+lines[0]+lines[1]+lines[2]]+TRI[''+lines[3]+lines[4]+lines[5]];}
+
+function finish(){
+  const ben=yaos.map(y=>(y.v===7||y.v===9)?1:0);
+  const ci=yaos.map((y,i)=>(y.v===6||y.v===9)?i:-1).filter(i=>i>=0);
+  const bian=ben.map((b,i)=>ci.includes(i)?(b?0:1):b);
+  const benNum=KEY2NUM[guaKey(ben)], bianNum=KEY2NUM[guaKey(bian)];
+  const q=document.getElementById('qInput').value.trim();
+  lastCast={ben,ci,benNum,bianNum,q,cat,t:Date.now()};
+  saveCast(lastCast);
+  renderResult();
+}
+
+/* ---------- 解卦渲染 ---------- */
+function ord(idx){return T[lang].yaoNum[idx];}
+function enYao(idx,yang){
+  const pos = idx===0?'at the beginning': idx===5?'at the top':`in the ${['','first','second','third','fourth','fifth'][idx+1]} place`;
+  return (yang?'Nine ':'Six ')+pos;
+}
+function yaoLabel(entry,idx){
+  if(lang==='zh') return entry.lines[idx].yao;
+  const yang=entry.lines[idx].yao.indexOf('九')>=0;
+  return enYao(idx,yang);
+}
+function lineHTML(entry,idx){
+  const ln=entry.lines[idx];
+  if(lang==='zh') return `<div class="yaoline"><b>${ln.yao}</b>：${ln.text}<span class="bai">${ln.bai}</span></div>`;
+  return `<div class="yaoline"><b>${yaoLabel(entry,idx)}:</b> ${ln.en}<span class="bai">「${ln.text}」</span></div>`;
+}
+function guaTextHTML(entry){
+  if(lang==='zh') return `${entry.gua}<span class="bai">${entry.guaBai}</span>`;
+  return `${entry.guaEn}<span class="bai">「${entry.gua}」</span>`;
+}
+
+/* ---------- 类别选择 + 详解 ---------- */
+function buildCats(){
+  const L=T[lang];
+  document.getElementById('catLabel').textContent=L.catLabel;
+  document.getElementById('cats').innerHTML=L.cats.map(([label,key])=>
+    `<span class="cat${key===cat?' on':''}" onclick="setCat('${key}')">${label}</span>`).join('');
+}
+function setCat(k){cat=k;buildCats();if(lastCast) renderDetail();}
+function renderDetail(){
+  const blk=document.getElementById('detailBlock');
+  if(typeof YI_DETAIL==='undefined'||!lastCast||!YI_DETAIL[lastCast.benNum]){blk.style.display='none';return;}
+  blk.style.display='block';
+  const L=T[lang], d=YI_DETAIL[lastCast.benNum];
+  document.getElementById('detailTitle').textContent=L.detailTitle;
+  let html=`<div class="d-para">${d.detail}</div>`;
+  if(cat!=='general' && d[cat]) html+=`<div class="d-cat"><b>${L.catName[cat]}：</b>${d[cat]}</div>`;
+  if(d.advice) html+=`<div class="d-advice">▸ ${L.adviceLabel}：${d.advice}</div>`;
+  if(lang==='en'&&L.detailNote) html+=`<div class="d-note">${L.detailNote}</div>`;
+  document.getElementById('detailBox').innerHTML=html;
+}
+
+function renderResult(){
+  if(!lastCast) return;
+  if(typeof YI==='undefined'||!YI[lastCast.benNum]){
+    document.getElementById('dataWarn').style.display='block';
+    document.getElementById('dataWarn').textContent = lang==='zh'
+      ? '⚠ 卦辞数据文件（yijing-data.js）尚未就绪，暂只显示卦象。'
+      : '⚠ Text data (yijing-data.js) not loaded yet; showing lines only.';
+    return;
+  }
+  const L=T[lang];
+  const bh=YI[lastCast.benNum], xh=YI[lastCast.bianNum];
+  const put=(id,t)=>document.getElementById(id).textContent=t;
+
+  put('benName', lang==='zh'?bh.name:bh.en);
+  document.getElementById('benSym').textContent=bh.sym;
+  put('benSub', `${lastCast.benNum} · ${lang==='zh'?bh.tri:bh.triEn}`);
+  document.getElementById('benText').innerHTML=guaTextHTML(bh);
+  document.getElementById('benXiang').textContent = lang==='zh'?bh.xiang:(bh.xiangEn||'');
+
+  const bb=document.getElementById('bianBlock');
+  if(lastCast.ci.length===0){ bb.style.display='none'; }
+  else{
+    bb.style.display='block';
+    put('bianName', lang==='zh'?xh.name:xh.en);
+    document.getElementById('bianSym').textContent=xh.sym;
+    put('bianSub', `${lastCast.bianNum} · ${lang==='zh'?xh.tri:xh.triEn}`);
+    document.getElementById('bianText').innerHTML=guaTextHTML(xh);
+  }
+  document.getElementById('verdictTitle').textContent=L.verdict;
+  document.getElementById('ruleBox').innerHTML=readingRule(lastCast.ci,bh,xh);
+  renderDetail();
+  document.getElementById('result').classList.add('show');
+}
+
+function readingRule(ci,bh,xh){
+  const n=ci.length, zh=(lang==='zh');
+  const arrow = zh?`（本卦《${bh.name}》→ 之《${xh.name}》）`
+                  :`(Primary ${bh.en} → Changing ${xh.en})`;
+  if(n===0) return (zh?`<b>不变（0变爻）：</b>以<b>本卦卦辞</b>断之。`:`<b>No changing line:</b> read the <b>Primary judgment</b>.`)
+                   +`<div class="yaoline">${guaTextHTML(bh)}</div>`;
+  if(n===1) return (zh?`<b>一变爻：</b>以本卦 <b>${ord(ci[0])}爻</b> 爻辞为占。`
+                      :`<b>One changing line:</b> read the <b>${ord(ci[0])} line</b> of the Primary.`)
+                   +` ${arrow}`+lineHTML(bh,ci[0]);
+  if(n===2) return (zh?`<b>二变爻：</b>取本卦 ${ord(ci[0])}、${ord(ci[1])} 两爻，<b>以上爻（${ord(ci[1])}）为主</b>。`
+                      :`<b>Two changing lines:</b> read both, the <b>upper (${ord(ci[1])}) governs</b>.`)
+                   +lineHTML(bh,ci[1])+lineHTML(bh,ci[0]);
+  if(n===3) return (zh?`<b>三变爻：</b>本、变卦<b>卦辞并读，本卦为主（贞）、变卦为辅（悔）</b>。`
+                      :`<b>Three changing lines:</b> read both <b>judgments; Primary governs</b>, Changing supports.`)
+                   +`<div class="yaoline">${zh?'本 ':'Primary — '}${guaTextHTML(bh)}</div>`
+                   +`<div class="yaoline">${zh?'变 ':'Changing — '}${guaTextHTML(xh)}</div>`;
+  if(n===4){const s=[0,1,2,3,4,5].filter(i=>!ci.includes(i));
+    return (zh?`<b>四变爻：</b>取变卦 ${ord(s[0])}、${ord(s[1])} 两不变爻，<b>以下爻（${ord(s[0])}）为主</b>。`
+              :`<b>Four changing lines:</b> read the two unchanging lines of the Changing hexagram, the <b>lower (${ord(s[0])}) governs</b>.`)
+           +lineHTML(xh,s[0])+lineHTML(xh,s[1]);}
+  if(n===5){const s=[0,1,2,3,4,5].filter(i=>!ci.includes(i))[0];
+    return (zh?`<b>五变爻：</b>以变卦唯一不变爻 <b>${ord(s)}爻</b> 为占。`
+              :`<b>Five changing lines:</b> read the single unchanging line, the <b>${ord(s)} line</b> of the Changing hexagram.`)
+           +lineHTML(xh,s);}
+  // n===6
+  if(lastCast.benNum===1&&bh.yong) return (zh?`<b>六爻皆变：</b>乾卦用「用九」。`:`<b>All six change:</b> Qian's “all-nines” text.`)
+        +`<div class="yaoline"><b>${bh.yong.yao}</b>：${zh?bh.yong.text+'<span class="bai">'+bh.yong.bai+'</span>':bh.yong.en}</div>`;
+  if(lastCast.benNum===2&&bh.yong) return (zh?`<b>六爻皆变：</b>坤卦用「用六」。`:`<b>All six change:</b> Kun's “all-sixes” text.`)
+        +`<div class="yaoline"><b>${bh.yong.yao}</b>：${zh?bh.yong.text+'<span class="bai">'+bh.yong.bai+'</span>':bh.yong.en}</div>`;
+  return (zh?`<b>六爻皆变：</b>以变卦《${xh.name}》卦辞为占。`:`<b>All six change:</b> read the Changing hexagram's judgment.`)
+        +`<div class="yaoline">${guaTextHTML(xh)}</div>`;
+}
+
+/* ---------- 历史记录 ---------- */
+const HKEY='yaoyiyao_history';
+function loadHistory(){try{return JSON.parse(localStorage.getItem(HKEY)||'[]');}catch(e){return [];}}
+function saveCast(c){const h=loadHistory();h.unshift(c);localStorage.setItem(HKEY,JSON.stringify(h.slice(0,50)));renderHistory();}
+function clearHistory(){localStorage.removeItem(HKEY);renderHistory();}
+function renderHistory(){
+  const L=T[lang], h=loadHistory(), box=document.getElementById('histList');
+  if(!h.length){box.innerHTML=`<div class="hist-empty">${L.histEmpty}</div>`;return;}
+  box.innerHTML=h.map((c,i)=>{
+    const bn=nameOf(c.benNum), xn=nameOf(c.bianNum);
+    const gua = c.ci&&c.ci.length? `${bn} → ${xn}` : `${bn}`;
+    const d=new Date(c.t), ds=`${d.getMonth()+1}/${d.getDate()} ${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}`;
+    return `<div class="hist-item" onclick="showHist(${i})"><div class="h1">${gua}</div><div class="h2">${ds}　${c.q?escapeHtml(c.q):L.noQ}</div></div>`;
+  }).join('');
+}
+function nameOf(num){if(typeof YI!=='undefined'&&YI[num])return lang==='zh'?YI[num].name:YI[num].en;return '#'+num;}
+function escapeHtml(s){return s.replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function showHist(i){
+  const c=loadHistory()[i]; if(!c)return;
+  lastCast=c;
+  cat=c.cat||'general'; buildCats();
+  document.getElementById('qInput').value=c.q||'';
+  redraw(c.ben,c.ci);
+  yaos=c.ben.map((b,idx)=>({v: c.ci.includes(idx)?(b?9:6):(b?7:8)}));
+  document.getElementById('tossBtn').disabled=true;
+  document.getElementById('step').textContent='';
+  document.getElementById('status').textContent = lang==='zh'?'（读取历史卦例）':'(loaded from history)';
+  renderResult();
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+function redraw(ben,ci){
+  const bc=document.getElementById('benCol'), xc=document.getElementById('bianCol');
+  bc.innerHTML=`<div class="label" id="benLabel">${T[lang].ben}</div>`;
+  xc.innerHTML=`<div class="label" id="bianLabel">${T[lang].bian}</div>`;
+  xc.style.opacity='1';
+  ben.forEach((b,idx)=>{
+    const changing=ci.includes(idx), v=changing?(b?9:6):(b?7:8);
+    addBar('benCol',idx,!!b,changing,v);
+    addBar('bianCol',idx, changing?!b:!!b, false, null);
+  });
+}
+
+/* ---------- 语言切换 ---------- */
+function applyLang(){
+  const L=T[lang];
+  document.documentElement.lang=L.htmlLang;
+  document.getElementById('subtitle').textContent=L.subtitle;
+  document.getElementById('benLabel').textContent=L.ben;
+  document.getElementById('bianLabel').textContent=L.bian;
+  document.getElementById('qInput').placeholder=L.qph;
+  document.getElementById('tossText').textContent=L.toss;
+  document.getElementById('resetBtn').textContent=L.reset;
+  document.getElementById('histTitle').textContent=L.histTitle;
+  document.getElementById('clearBtn').textContent=L.clear;
+  document.getElementById('methodSummary').textContent=L.methodSummary;
+  document.getElementById('methodBody').innerHTML=L.method;
+  document.getElementById('transBtn').textContent=L.transBtn;
+  document.getElementById('verdictTitle').textContent=L.verdict;
+  if(yaos.length===0) document.getElementById('status').textContent=L.start;
+  labelYaoIdx();
+  buildCats();
+  renderHistory();
+  if(lastCast) renderResult();
+}
+function toggleLang(){lang = lang==='zh'?'en':'zh';applyLang();}
+
+/* ---------- 重置 ---------- */
+function resetAll(){
+  yaos=[]; lastCast=null;
+  const bc=document.getElementById('benCol'), xc=document.getElementById('bianCol');
+  bc.innerHTML=`<div class="label" id="benLabel">${T[lang].ben}</div>`;
+  xc.innerHTML=`<div class="label" id="bianLabel">${T[lang].bian}</div>`;
+  xc.style.opacity='.3';
+  document.querySelectorAll('.coin').forEach(c=>{c.className='coin';c.textContent=lang==='zh'?'爻':'⚌';});
+  document.getElementById('qInput').value='';
+  document.getElementById('status').textContent=T[lang].start;
+  document.getElementById('step').textContent='(1/6)';
+  document.getElementById('tossBtn').disabled=false;
+  document.getElementById('result').classList.remove('show');
+}
+
+/* ---------- init ---------- */
+applyLang();
+renderHistory();
+if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+if(typeof YI==='undefined'){
+  document.getElementById('dataWarn').style.display='block';
+  document.getElementById('dataWarn').textContent='⚠ 未找到 yijing-data.js（卦辞数据）。卦象仍可用。';
+}
+</script>
+</body>
+</html>
