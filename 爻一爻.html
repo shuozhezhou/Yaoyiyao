@@ -131,6 +131,10 @@
   .nj-row-yong{background:rgba(201,165,90,.13);}
   .najia-legend{font-size:11.5px;color:var(--ink-dim);line-height:1.8;margin-top:8px;}
   .najia-legend b{color:var(--gold-dim);}
+  .najia-verdict{font-size:12.5px;color:var(--ink);line-height:1.9;background:rgba(201,165,90,.10);border:1px solid var(--gold-dim);border-radius:8px;padding:10px 12px;margin:8px 0;}
+  .najia-verdict b{color:var(--gold);}
+  .nj-fu{color:#7f9a86;font-size:10.5px;display:block;}
+  .nj-table th{color:var(--gold-dim);font-size:11px;font-weight:600;text-align:left;padding:4px 3px;border-bottom:1px solid var(--gold-dim);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -203,6 +207,7 @@
     <details id="najiaWrap">
       <summary class="sect" id="najiaSummary"></summary>
       <div class="najia-guide" id="najiaGuide"></div>
+      <div class="najia-verdict" id="najiaVerdict"></div>
       <div id="najiaBox"></div>
       <div class="najia-legend" id="najiaLegend"></div>
     </details>
@@ -375,7 +380,7 @@ const ZHI_EN=['Zi','Chou','Yin','Mao','Chen','Si','Wu','Wei','Shen','You','Xu','
 function jdn(y,m,d){const a=Math.floor((14-m)/12),yy=y+4800-a,mm=m+12*a-3;return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;}
 function ganzhi(dt){
   const y=dt.getFullYear(),m=dt.getMonth()+1,d=dt.getDate(),h=dt.getHours();
-  let yy=y; if(m<2||(m===2&&d<4)) yy=y-1;           // 年以立春(约2/4)为界
+  let yy=y; if(m<2||(m===2&&d<termDay(y,3.87))) yy=y-1;   // 年以立春为界(寿星公式)
   const yi=((yy-4)%60+60)%60;                        // 年干支序(甲子=0)
   const di=((jdn(y,m,d)+47)%60+60)%60;               // 日干支序
   const hb=Math.floor((h+1)/2)%12;                   // 时支
@@ -444,9 +449,12 @@ function liuqin(P,E){ if(E===P)return'兄弟'; if(SHENG[E]===P)return'父母'; i
 function startShen(stem){ return [0,0,1,1,2,3,4,4,5,5][stem]; }
 function wangShuai(Me,e){ if(e===Me)return'旺'; if(SHENG[Me]===e)return'相'; if(SHENG[e]===Me)return'休'; if(KE[e]===Me)return'囚'; return'死'; }
 function riChen(De,e,db,eb){ if(eb===db)return'临'; if((eb+6)%12===db)return'冲'; if(De===e)return'日比'; if(SHENG[De]===e)return'日生'; if(SHENG[e]===De)return'泄'; if(KE[De]===e)return'日克'; return'耗'; }
-const NJ_JIE=[6,4,6,5,6,6,7,8,8,8,7,7];             // 各月节气约日
-const NJ_MB=[1,2,3,4,5,6,7,8,9,10,11,0];            // 交节后的月支
-function monthBranch(m,d){ return d>=NJ_JIE[m-1]?NJ_MB[m-1]:NJ_MB[(m-2+12)%12]; }
+/* 寿星公式：节气日（约2000-2099适用）。JIE_C[月]=[C值, 该节起始月支] */
+const JIE_C={1:[5.4055,1],2:[3.87,2],3:[5.63,3],4:[4.81,4],5:[5.52,5],6:[5.678,6],7:[7.108,7],8:[7.5,8],9:[7.646,9],10:[8.318,10],11:[7.438,11],12:[7.18,0]};
+function termDay(year,C){ const Y=year%100; return Math.floor(Y*0.2422+C)-Math.floor((Y-1)/4); }
+function monthBranch(year,m,d){ const j=JIE_C[m]; return d>=termDay(year,j[0]) ? j[1] : (j[1]-1+12)%12; }
+function xunKong(gz){ const base=(Math.floor(gz/10)*10)%12; return [(base+10)%12,(base+11)%12]; } // 旬空(空亡)两支
+function pureFuShen(info){ const t=info.palace, pl=[...TRIBITS[t],...TRIBITS[t]], br=njBranches(pl), P=info.elem; return br.map(b=>({qin:liuqin(P,ZHI_ELEM[b]),branch:b,elem:ZHI_ELEM[b]})); } // 本宫首卦六亲(供伏神)
 function njBranches(lines){ const lo=TRI[''+lines[0]+lines[1]+lines[2]], up=TRI[''+lines[3]+lines[4]+lines[5]]; return [...NAJIA_ZHI[lo].inner,...NAJIA_ZHI[up].outer]; }
 
 function renderNajia(){
@@ -455,30 +463,68 @@ function renderNajia(){
   wrap.style.display='block';
   const zh=lang==='zh', info=NAJIA_INFO[lastCast.benNum], P=info.elem;
   const g=lastCast.gz, dStem=g.d%10, dBranch=g.d%12, dEl=ZHI_ELEM[dBranch];
-  const dt=new Date(g.iso), mb=monthBranch(dt.getMonth()+1,dt.getDate()), mEl=ZHI_ELEM[mb], st=startShen(dStem);
+  const dt=new Date(g.iso), mb=monthBranch(dt.getFullYear(),dt.getMonth()+1,dt.getDate()), mEl=ZHI_ELEM[mb], st=startShen(dStem);
   const benB=njBranches(lastCast.ben);
   const bianLines=lastCast.ben.map((b,i)=>lastCast.ci.includes(i)?(b?0:1):b);
   const bianB=njBranches(bianLines);
+  const kong=xunKong(g.d);
+  const pureQ=pureFuShen(info);
+  const benQinSet=new Set(benB.map(b=>liuqin(P,ZHI_ELEM[b])));
+  const L6=[];
+  for(let i=0;i<6;i++){
+    const e=ZHI_ELEM[benB[i]], qin=liuqin(P,e);
+    const o={i,e,qin,god:LIUSHEN[(st+i)%6],yang:lastCast.ben[i],changing:lastCast.ci.includes(i),
+      mark:info.world===i+1?'世':info.resp===i+1?'应':'',ws:wangShuai(mEl,e),rc:riChen(dEl,e,dBranch,benB[i]),
+      isKong:kong.includes(benB[i]),branch:benB[i],bianE:null,bianQin:null,bianBranch:null,
+      fu:benQinSet.has(pureQ[i].qin)?null:pureQ[i]};
+    if(o.changing){o.bianBranch=bianB[i];o.bianE=ZHI_ELEM[bianB[i]];o.bianQin=liuqin(P,o.bianE);}
+    L6.push(o);
+  }
   const zname=b=>zh?ZHI[b]:ZHI_EN[b], en_el=e=>zh?e:ELEM_EN[e], en_qin=q=>zh?q:QIN_EN[q], en_sh=s=>zh?s:SHEN_EN[s], en_st=s=>zh?s:(STATE_EN[s]||s);
   const yong=YONG_CAT[cat]||['世'];
   document.getElementById('najiaSummary').textContent=zh?'六爻纳甲盘（进阶）':'Najia chart (advanced)';
-  let rows='';
-  for(let i=5;i>=0;i--){
-    const e=ZHI_ELEM[benB[i]], qin=liuqin(P,e), god=LIUSHEN[(st+i)%6], yang=lastCast.ben[i], changing=lastCast.ci.includes(i);
-    const mk=info.world===i+1?(zh?'世':'W'):info.resp===i+1?(zh?'应':'R'):'';
-    const ws=wangShuai(mEl,e), rc=riChen(dEl,e,dBranch,benB[i]);
-    const isYong=yong.includes(qin)||(yong.includes('世')&&info.world===i+1);
-    let bianCell='';
-    if(changing){const be=ZHI_ELEM[bianB[i]], bq=liuqin(P,be); bianCell=`<span class="nj-bian">→ ${zname(bianB[i])}${en_el(be)} ${en_qin(bq)}</span>`;}
-    rows+=`<tr class="${isYong?'nj-row-yong':''}"><td class="nj-god">${en_sh(god)}</td>`+
-      `<td class="nj-qin">${en_qin(qin)}</td>`+
-      `<td>${zname(benB[i])}${en_el(e)}</td>`+
-      `<td class="nj-bar">${yang?'━━━':'━ ━'}</td>`+
-      `<td class="nj-mark">${changing?(yang?'○':'×'):''}${mk?' '+mk:''}</td>`+
-      `<td class="nj-state">${en_st(ws)}·${en_st(rc)}</td>`+
-      `<td>${bianCell}</td></tr>`;
+  const hd=zh?['六神','六亲','地支','爻','世应','月/日','伏/变']:['Spirit','Kin','Branch','Line','W/R','Mo/Day','Fu/Chg'];
+  let rows=`<tr>${hd.map(x=>`<th>${x}</th>`).join('')}</tr>`;
+  for(let i=5;i>=0;i--){ const r=L6[i];
+    const isYong=yong.includes(r.qin)||(yong.includes('世')&&r.mark==='世');
+    let last='';
+    if(r.changing) last+=`<span class="nj-bian">→ ${zname(r.bianBranch)}${en_el(r.bianE)} ${en_qin(r.bianQin)}</span>`;
+    if(r.fu) last+=`<span class="nj-fu">${zh?'伏':'Hid'} ${en_qin(r.fu.qin)}·${zname(r.fu.branch)}${en_el(r.fu.elem)}</span>`;
+    rows+=`<tr class="${isYong?'nj-row-yong':''}">`+
+      `<td class="nj-god">${en_sh(r.god)}</td>`+
+      `<td class="nj-qin">${en_qin(r.qin)}</td>`+
+      `<td>${zname(r.branch)}${en_el(r.e)}</td>`+
+      `<td class="nj-bar">${r.yang?'━━━':'━ ━'}${r.changing?(r.yang?' ○':' ×'):''}</td>`+
+      `<td class="nj-mark">${r.mark?(zh?r.mark:(r.mark==='世'?'W':'R')):''}</td>`+
+      `<td class="nj-state">${en_st(r.ws)}·${en_st(r.rc)}${r.isKong?(zh?'·空':'·Vd'):''}</td>`+
+      `<td>${last}</td></tr>`;
   }
   document.getElementById('najiaBox').innerHTML=`<table class="nj-table">${rows}</table>`;
+  // ---- 白话自动断（结合问卦类型） ----
+  const cl=zh?'：':': ', c=zh?'，':', ', pp=zh?'。':'. ', dt2=zh?'、':', ';
+  const worldLine=L6.find(r=>r.mark==='世'), respLine=L6.find(r=>r.mark==='应');
+  const pick=q=>{const cd=L6.filter(r=>r.qin===q); if(!cd.length)return null; cd.sort((a,b)=>(b.changing-a.changing)||((b.mark!=='')-(a.mark!==''))); return cd[0];};
+  const score=(r,inv)=>{ if(!r)return null; let s=0; const rs=[];
+    if(r.ws==='旺'||r.ws==='相'){s++;rs.push(zh?'旺相有气':'strong in season');} else if(r.ws==='囚'||r.ws==='死'){s--;rs.push(zh?'休囚乏力':'weak in season');} else rs.push(zh?'月令平平':'moderate in season');
+    if(['临','日生','日比'].includes(r.rc)){s++;rs.push(zh?'得日辰生扶':'aided by the day');} else if(r.rc==='日克'){s--;rs.push(zh?'受日辰克制':'restrained by the day');} else if(r.rc==='冲'){s--;rs.push(zh?'逢日冲动摇':'clashed by the day');}
+    if(r.isKong){s--;rs.push(zh?'逢旬空':'in the void');}
+    if(r.changing){const rel=SHENG[r.bianE]===r.e?'g':KE[r.bianE]===r.e?'k':'o'; if(rel==='g'){s++;rs.push(zh?'动化回头生':'a returning generation');} else if(rel==='k'){s--;rs.push(zh?'动化回头克':'a returning restraint');} else rs.push(zh?'发动有变':'in motion');}
+    if(inv) s=-s; return {s,rs};};
+  const concl=s=>s>0?(zh?'总体偏吉、较有利':'overall favorable'):s<0?(zh?'总体偏弱、多阻碍':'overall unfavorable'):(zh?'吉凶参半、需再详审':'mixed');
+  const relTwo=(a,b)=>{ if(!a||!b)return''; if(a.e===b.e)return zh?'世应比和、彼此相类':'self and other are alike'; if(SHENG[a.e]===b.e)return zh?'世生应、你为对方付出':'you give to the other'; if(SHENG[b.e]===a.e)return zh?'应生世、对方向着你':'the other favors you'; if(KE[a.e]===b.e)return zh?'世克应、你占主动':'you hold the initiative'; if(KE[b.e]===a.e)return zh?'应克世、受制于人':'you are constrained by the other'; return'';};
+  const V=[];
+  if(cat==='general'){ const ev=score(worldLine); if(ev)V.push((zh?`自身看世爻（${en_qin(worldLine.qin)}）`:`Self = the World line (${en_qin(worldLine.qin)})`)+cl+ev.rs.join(dt2)+c+concl(ev.s)+pp; const rt=relTwo(worldLine,respLine); if(rt)V.push(rt+pp); }
+  else if(cat==='wealth'){ const r=pick('妻财'); if(!r)V.push(zh?'妻财不上卦（伏而不现），求财一时无端绪，宜待其透出或值日月之时。':'The Wealth spirit is hidden (not on the chart); money has no handle yet — wait until it emerges or meets its day/month.'); else{const ev=score(r);V.push((zh?`财爻妻财（${zname(r.branch)}${en_el(r.e)}）`:`Wealth line (${zname(r.branch)}${en_el(r.e)})`)+cl+ev.rs.join(dt2)+c+concl(ev.s)+(zh?'。财旺又生扶世爻则易得。':'. If it is strong and supports the World line, gain comes more easily.'));} }
+  else if(cat==='career'){ const r=pick('官鬼'); if(!r)V.push(zh?'官鬼不上卦，功名事业暂无着落，宜待时而动。':'The Officer spirit is not on the chart; career/status has no anchor yet — bide your time.'); else{const ev=score(r);V.push((zh?`官爻官鬼（${zname(r.branch)}${en_el(r.e)}）`:`Officer line (${zname(r.branch)}${en_el(r.e)})`)+cl+ev.rs.join(dt2)+c+concl(ev.s)+(zh?'。官鬼旺而生世、持世，事业功名有望。':'. If strong and supporting or occupying the World line, prospects are good.'));} }
+  else if(cat==='love'){ V.push(zh?'（男占多以妻财为对象，女占多以官鬼为对象）':'(For a man, Wealth often marks the partner; for a woman, the Officer.)'); [['妻财',pick('妻财')],['官鬼',pick('官鬼')]].forEach(([q,r])=>{ if(r){const ev=score(r);V.push(en_qin(q)+(zh?`（${zname(r.branch)}${en_el(r.e)}）`:` (${zname(r.branch)}${en_el(r.e)})`)+cl+ev.rs.join(dt2)+c+concl(ev.s)+pp);} }); const rt=relTwo(worldLine,respLine); if(rt)V.push((zh?'世应：':'World–Response: ')+rt+(zh?'（相生相合则和睦，相冲相克多波折）。':' (generation/harmony bodes well; clash or control brings friction).')); }
+  else if(cat==='health'){ const bing=pick('官鬼'), yi=pick('子孙');
+    if(bing){const strong=(bing.ws==='旺'||bing.ws==='相');V.push((zh?`官鬼为病（${zname(bing.branch)}${en_el(bing.e)}）`:`Officer = illness (${zname(bing.branch)}${en_el(bing.e)})`)+cl+(strong?(zh?'旺'+(bing.changing?'而发动':'')+'，病势较重、宜慎防':'strong'+(bing.changing?' and moving':'')+', illness is heavier — take care'):(zh?'休囚衰弱，病不为大':'weak, the illness is not serious'))+pp);}
+    else V.push(zh?'官鬼不上卦，多无大病或病象未成。':'The Officer (illness) is not on the chart — often no serious illness. ');
+    if(yi){const strong=(yi.ws==='旺'||yi.ws==='相');V.push((zh?'子孙为医药、化解':'Offspring = remedy')+cl+(strong?(zh?'旺相有力，得医得解、渐愈可期':'strong — remedy and recovery are likely'):(zh?'力弱，调理见效较慢':'weak — recovery is slower'))+pp);}
+    else V.push(zh?'子孙不上卦，求医化解之力稍欠。':'The Offspring (remedy) is not on the chart — less help at hand. '); }
+  V.unshift((zh?`本旬空亡：${ZHI[kong[0]]}、${ZHI[kong[1]]}（临空之爻暂不受用）`:`Void branches: ${ZHI_EN[kong[0]]}, ${ZHI_EN[kong[1]]} (a line in the void is inactive for now)`)+pp);
+  V.push(zh?'应期参考：多在用神地支值日、值月，或逢冲、出空之时。':'Timing: often on the day or month of the use-spirit’s branch, or when it is clashed or leaves the void.');
+  document.getElementById('najiaVerdict').innerHTML=(zh?'<b>白话断：</b>':'<b>Plain reading: </b>')+V.join('');
   const mgz=zh?ZHI[mb]:ZHI_EN[mb], dgz=zh?GAN[dStem]+ZHI[dBranch]:GAN_EN[dStem]+ZHI_EN[dBranch];
   const yongTxt=yong.map(q=>q==='世'?(zh?'世爻(自身)':'World (self)'):en_qin(q)).join(zh?'、':' / ');
   document.getElementById('najiaGuide').innerHTML=zh
