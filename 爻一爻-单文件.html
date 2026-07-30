@@ -135,10 +135,26 @@
   .najia-verdict b{color:var(--gold);}
   .nj-fu{color:#7f9a86;font-size:10.5px;display:block;}
   .nj-table th{color:var(--gold-dim);font-size:11px;font-weight:600;text-align:left;padding:4px 3px;border-bottom:1px solid var(--gold-dim);white-space:nowrap;}
+  /* ---- 英文模式适配：收窄字距、允许换行、表格可横向滚动 ---- */
+  html.lang-en header p{letter-spacing:.5px;}
+  html.lang-en .btn-main,html.lang-en .btn-reset{letter-spacing:.5px;}
+  html.lang-en .btn-lang,html.lang-en .cat,html.lang-en .seg-btn,html.lang-en .catlabel,html.lang-en .method-row{letter-spacing:0;}
+  html.lang-en .sect,html.lang-en .gua-title .big{letter-spacing:.5px;}
+  html.lang-en .gua-sub{letter-spacing:0;}
+  html.lang-en .yao .idx{font-size:10px;left:-40px;}
+  #najiaBox{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  html.lang-en .nj-table{font-size:11px;}
+  html.lang-en .nj-table td,html.lang-en .nj-table th{padding:5px 5px;}
+  .copy-row{margin-top:14px;text-align:center;}
+  .btn-copy{background:linear-gradient(180deg,var(--gold),#a9863f);color:#1a150c;font-weight:600;border:none;border-radius:12px;padding:12px 22px;font-size:14px;font-family:inherit;cursor:pointer;letter-spacing:.5px;}
+  .btn-copy:active{transform:translateY(1px);}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:rgba(28,24,18,.96);border:1px solid var(--gold-dim);color:var(--gold);padding:10px 18px;border-radius:22px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:300;max-width:82%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 <button class="btn-lang" id="transBtn" onclick="toggleLang()"></button>
+<div class="toast" id="toast"></div>
 <div class="app">
   <header>
     <h1>爻 一 爻</h1>
@@ -211,6 +227,8 @@
       <div id="najiaBox"></div>
       <div class="najia-legend" id="najiaLegend"></div>
     </details>
+
+    <div class="copy-row"><button class="btn-copy" id="copyBtn" onclick="copyReading()"></button></div>
   </div>
 
   <div class="card">
@@ -2219,6 +2237,7 @@ const T = {
    relTitle:"延伸卦象",
    rel:{ hu:["互卦","事情发展的中间过程与内情"], cuo:["错卦","事情的反面、对立的可能"], zong:["综卦","换位·从对方或反向看"] },
    methodLabel:"起卦法", methodCoin:"铜钱法", methodYarrow:"蓍草法",
+   copyBtn:"📋 复制卦象（拿去问 AI 解读）", copied:"已复制到剪贴板", copyFail:"复制失败，请手动选择文本",
    histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
    methodSummary:"起卦规则说明",
    transBtn:"EN · English",
@@ -2247,6 +2266,7 @@ const T = {
    relTitle:"Related hexagrams",
    rel:{ hu:["Nuclear","the inner development / middle phase"], cuo:["Opposite","the reverse side / opposite possibility"], zong:["Reversed","the other side's / inverted view"] },
    methodLabel:"Method", methodCoin:"Coin", methodYarrow:"Yarrow",
+   copyBtn:"📋 Copy the cast (to ask an AI)", copied:"Copied to clipboard", copyFail:"Copy failed — please select the text manually",
    histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
    methodSummary:"How the method works",
    transBtn:"中 · 中文",
@@ -2384,9 +2404,9 @@ const SHENG={木:'火',火:'土',土:'金',金:'水',水:'木'};
 const KE={木:'土',土:'水',水:'火',火:'金',金:'木'};
 const LIUSHEN=['青龙','朱雀','勾陈','螣蛇','白虎','玄武'];
 const QIN_EN={父母:'Parent',官鬼:'Officer',妻财:'Wealth',子孙:'Offspring',兄弟:'Sibling'};
-const SHEN_EN={青龙:'Azure Dragon',朱雀:'Vermilion Bird',勾陈:'Hook-Snake',螣蛇:'Coiling Snake',白虎:'White Tiger',玄武:'Black Tortoise'};
+const SHEN_EN={青龙:'Dragon',朱雀:'Phoenix',勾陈:'Hook',螣蛇:'Snake',白虎:'Tiger',玄武:'Tortoise'};
 const ELEM_EN={金:'Metal',木:'Wood',水:'Water',火:'Fire',土:'Earth'};
-const STATE_EN={旺:'Prosperous',相:'Strong',休:'Resting',囚:'Trapped',死:'Dead',临:'On-day',冲:'Clash',日比:'Peer',日生:'Day-gen',泄:'Drains',日克:'Day-ctrl',耗:'Cost'};
+const STATE_EN={旺:'Prosp',相:'Strong',休:'Rest',囚:'Trap',死:'Dead',临:'OnDay',冲:'Clash',日比:'Peer',日生:'D-gen',泄:'Drain',日克:'D-ctrl',耗:'Cost'};
 const YONG_CAT={ general:['世'], career:['官鬼'], wealth:['妻财'], love:['妻财','官鬼'], health:['官鬼','子孙'] };
 const NAJIA_INFO={};
 (function(){ // 京房八宫：本宫→一世..五世→游魂→归魂
@@ -2451,7 +2471,8 @@ function renderNajia(){
       `<td class="nj-state">${en_st(r.ws)}·${en_st(r.rc)}${r.isKong?(zh?'·空':'·Vd'):''}</td>`+
       `<td>${last}</td></tr>`;
   }
-  document.getElementById('najiaBox').innerHTML=`<table class="nj-table">${rows}</table>`;
+  const fuNote=L6.some(r=>r.fu)?'':`<div class="nj-fu" style="margin-top:6px">${zh?'（本卦六亲俱全，无伏神）':'(All five relatives present; no hidden spirit.)'}</div>`;
+  document.getElementById('najiaBox').innerHTML=`<table class="nj-table">${rows}</table>`+fuNote;
   // ---- 白话自动断（结合问卦类型） ----
   const cl=zh?'：':': ', c=zh?'，':', ', pp=zh?'。':'. ', dt2=zh?'、':', ';
   const worldLine=L6.find(r=>r.mark==='世'), respLine=L6.find(r=>r.mark==='应');
@@ -2528,6 +2549,59 @@ function buildCats(){
     `<span class="cat${key===cat?' on':''}" onclick="setCat('${key}')">${label}</span>`).join('');
 }
 function setCat(k){cat=k;buildCats();if(lastCast){renderDetail();renderNajia();}}
+
+/* ---------- 一键复制（生成中文提示，供拿去问其他 AI） ---------- */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+function buildCopyText(){
+  const bh=YI[lastCast.benNum], xh=YI[lastCast.bianNum], ci=lastCast.ci;
+  const yn=['初','二','三','四','五','上'];
+  const catZh={general:'综合',career:'事业',love:'感情婚恋',wealth:'财运',health:'健康'}[lastCast.cat]||'综合';
+  const o=[];
+  o.push('【周易金钱卦 · 求解读】');
+  o.push('请你作为精通《周易》与六爻纳甲（火珠林）的老师，结合下面的起卦信息，为我详细、通俗地解读这一卦并给出务实建议。若我使用其他语言，请把解读翻译成我的语言。');
+  o.push('');
+  o.push('· 所问之事：'+(lastCast.q||'（未填写，请按综合运势解读）'));
+  o.push('· 问卦类型：'+catZh);
+  o.push('· 起卦法：'+(method==='yarrow'?'蓍草法（大衍）':'铜钱法'));
+  if(lastCast.gz){const g=lastCast.gz,dt=new Date(g.iso),p=n=>('0'+n).slice(-2);
+    const y=GAN[g.y%10]+ZHI[g.y%12], d=GAN[g.d%10]+ZHI[g.d%12], h=GAN[g.hStem]+ZHI[g.hBranch];
+    o.push('· 占时：'+dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate())+' '+p(dt.getHours())+':'+p(dt.getMinutes())+'（'+y+'年 '+d+'日 '+h+'时）');}
+  o.push('');
+  o.push('【本卦】'+bh.name+' '+bh.sym+'（'+bh.tri+'）');
+  o.push('卦辞：'+bh.gua+'（'+bh.guaBai+'）');
+  if(bh.xiang) o.push('大象：'+bh.xiang);
+  if(ci.length){
+    o.push('【变卦】'+xh.name+' '+xh.sym+'（'+xh.tri+'）');
+    o.push('变爻：'+ci.map(i=>yn[i]+'爻').join('、'));
+    ci.forEach(i=>{const ln=bh.lines[i]; o.push('　'+ln.yao+'：'+ln.text+'（'+ln.bai+'）');});
+  } else { o.push('（六爻不变，以本卦卦辞为主断）'); }
+  if(typeof YI_DETAIL!=='undefined'&&YI_DETAIL[lastCast.benNum]){const dd=YI_DETAIL[lastCast.benNum];
+    o.push(''); o.push('【卦象详解】'+dd.detail);
+    if(lastCast.cat&&lastCast.cat!=='general'&&dd[lastCast.cat]) o.push('【'+catZh+'】'+dd[lastCast.cat]);
+    if(dd.advice) o.push('【行动建议】'+dd.advice);
+  }
+  const b=lastCast.ben, cuo=b.map(x=>x?0:1), zong=b.slice().reverse(), hu=[b[1],b[2],b[3],b[2],b[3],b[4]];
+  const nmOf=n=>YI[n]?YI[n].name:('#'+n);
+  o.push(''); o.push('【延伸卦】互卦：'+nmOf(KEY2NUM[guaKey(hu)])+'　错卦：'+nmOf(KEY2NUM[guaKey(cuo)])+'　综卦：'+nmOf(KEY2NUM[guaKey(zong)]));
+  if(lastCast.gz&&typeof NAJIA_INFO!=='undefined'&&NAJIA_INFO[lastCast.benNum]){
+    const info=NAJIA_INFO[lastCast.benNum], P=info.elem, g=lastCast.gz, dStem=g.d%10, dBranch=g.d%12;
+    const dt=new Date(g.iso), mb=monthBranch(dt.getFullYear(),dt.getMonth()+1,dt.getDate()), st=startShen(dStem), kong=xunKong(g.d), benB=njBranches(lastCast.ben);
+    o.push(''); o.push('【六爻纳甲】'+info.palace+'宫·属'+info.elem+'；月建'+ZHI[mb]+'，日辰'+GAN[dStem]+ZHI[dBranch]+'，旬空'+ZHI[kong[0]]+ZHI[kong[1]]);
+    for(let i=5;i>=0;i--){const e=ZHI_ELEM[benB[i]],mk=info.world===i+1?'世':info.resp===i+1?'应':'　',chg=ci.includes(i)?'(动)':'';
+      o.push('　'+yn[i]+'爻 '+LIUSHEN[(st+i)%6]+' '+liuqin(P,e)+' '+ZHI[benB[i]]+e+' '+mk+chg);}
+  }
+  o.push(''); o.push('（以上为自动起卦结果，请据此解读。）');
+  return o.join('\n');
+}
+function copyReading(){
+  if(!lastCast||typeof YI==='undefined'||!YI[lastCast.benNum]){toast(lang==='zh'?'请先摇卦':'Cast a hexagram first');return;}
+  const text=buildCopyText();
+  const done=()=>toast(T[lang].copied), fail=()=>{
+    try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);toast(T[lang].copied);}
+    catch(e){toast(T[lang].copyFail);}
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(fail);} else fail();
+}
 function renderDetail(){
   const blk=document.getElementById('detailBlock');
   if(!lastCast){blk.style.display='none';return;}
@@ -2660,6 +2734,7 @@ function redraw(ben,ci){
 function applyLang(){
   const L=T[lang];
   document.documentElement.lang=L.htmlLang;
+  document.documentElement.classList.toggle('lang-en', lang==='en');
   document.getElementById('subtitle').textContent=L.subtitle;
   document.getElementById('benLabel').textContent=L.ben;
   document.getElementById('bianLabel').textContent=L.bian;
@@ -2675,6 +2750,7 @@ function applyLang(){
   document.getElementById('methodLabel').textContent=L.methodLabel;
   document.getElementById('segCoin').textContent=L.methodCoin;
   document.getElementById('segYarrow').textContent=L.methodYarrow;
+  document.getElementById('copyBtn').textContent=L.copyBtn;
   if(yaos.length===0) document.getElementById('status').textContent=L.start;
   labelYaoIdx();
   buildCats();
