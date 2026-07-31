@@ -4,13 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>爻一爻 · 周易金钱卦</title>
-<meta name="theme-color" content="#12100c">
+<meta name="theme-color" content="#0f0c08">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="爻一爻">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#12100c; --panel:#1c1812; --panel2:#241f17; --line:#3a3327;
@@ -150,6 +153,85 @@
   .btn-copy:active{transform:translateY(1px);}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:rgba(28,24,18,.96);border:1px solid var(--gold-dim);color:var(--gold);padding:10px 18px;border-radius:22px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:300;max-width:82%;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===================== 视觉精修（覆盖层） ===================== */
+  :root{
+    --bg:#0f0c08; --panel:#181410; --panel2:#211b14; --line:#332c22;
+    --gold:#cda65f; --gold-bright:#e6c37c; --gold-dim:#8a7440;
+    --ink:#ece5d6; --ink-dim:#a99f88; --yang:#dcb978; --yin:#8f8468; --accent:#c85a3f;
+    --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+    --sans:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    --r-lg:18px; --r-md:12px;
+    --shadow:0 12px 36px rgba(0,0,0,.5); --dur:220ms; --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  body{font-family:var(--sans);background:radial-gradient(120% 60% at 50% -8%,#241c11 0%,#0f0c08 58%);
+    padding:22px 16px calc(64px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .app{max-width:468px;}
+  header{margin:4px 0 24px;}
+  header h1{font-family:var(--serif);font-size:28px;font-weight:600;letter-spacing:12px;text-indent:12px;color:var(--gold);}
+  @supports ((-webkit-background-clip:text) or (background-clip:text)){
+    header h1{background:linear-gradient(180deg,var(--gold-bright),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  }
+  header p{margin-top:12px;font-size:11px;letter-spacing:3px;color:var(--ink-dim);}
+  header::after{content:"";display:block;width:60px;height:1px;margin:15px auto 0;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 18px;box-shadow:var(--shadow);}
+  button:focus-visible,.cat:focus-visible,.seg-btn:focus-visible,.qinput:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .hexwrap{gap:38px;}
+  .hexcol{gap:11px;}
+  .hexcol .label{font-family:var(--sans);font-size:11px;letter-spacing:3px;color:var(--gold-dim);}
+  .yao{width:158px;height:18px;gap:14px;}
+  .bar{border-radius:4px;background:linear-gradient(180deg,var(--gold-bright),#b8945a 55%,#997c45);box-shadow:0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,240,205,.3);}
+  .yao.yin .bar{background:linear-gradient(180deg,#9a8f72,#726a52 55%,#5b5443);box-shadow:0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);}
+  .yao .mark{right:-26px;color:var(--accent);font-weight:700;}
+  .yao .idx{font-family:var(--sans);left:-32px;color:var(--ink-dim);}
+  .coins{gap:18px;height:60px;}
+  .coin{width:52px;height:52px;font-family:var(--serif);font-weight:600;color:var(--gold);border:1.5px solid var(--gold-dim);background:radial-gradient(circle at 34% 30%,#463a25,#201a11 72%);box-shadow:inset 0 1px 3px rgba(255,220,150,.16),inset 0 -3px 7px rgba(0,0,0,.6),0 3px 9px rgba(0,0,0,.45);}
+  .coin.yang{border-color:var(--gold);color:var(--gold-bright);}
+  .qinput{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-md);font-family:var(--sans);font-size:14px;padding:12px 14px;transition:border-color var(--dur),box-shadow var(--dur);}
+  .qinput:focus{border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(201,165,90,.12);outline:none;}
+  .status{font-family:var(--sans);font-size:13px;letter-spacing:.5px;color:var(--ink-dim);}
+  button{font-family:var(--sans);}
+  .btnrow{gap:12px;}
+  .btn-main{min-height:50px;border-radius:var(--r-md);font-size:16px;letter-spacing:5px;font-weight:600;color:#1c1710;background:linear-gradient(180deg,var(--gold-bright),#a9863f);box-shadow:0 6px 18px rgba(201,165,90,.26);transition:filter var(--dur),transform .1s,box-shadow var(--dur);}
+  .btn-main:hover:not(:disabled){filter:brightness(1.06);}
+  .btn-main:active:not(:disabled){transform:translateY(1px);box-shadow:0 3px 10px rgba(201,165,90,.22);}
+  .btn-reset{flex:0 0 92px;min-height:50px;border-radius:var(--r-md);letter-spacing:2px;transition:var(--dur);}
+  .btn-reset:hover{border-color:var(--gold-dim);color:var(--gold);}
+  .btn-lang{top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));background:rgba(24,20,16,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--gold-dim);border-radius:20px;transition:var(--dur);}
+  .btn-lang:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .cat{border-radius:20px;transition:var(--dur);}
+  .cat:hover{border-color:var(--gold-dim);color:var(--ink);}
+  .cat.on{border-color:var(--gold);color:#1c1710;background:linear-gradient(180deg,var(--gold-bright),#b8945a);font-weight:600;}
+  .seg{border-radius:18px;}
+  .seg-btn{transition:var(--dur);}
+  .seg-btn.on{background:linear-gradient(180deg,var(--gold-bright),#b8945a);color:#1c1710;font-weight:600;}
+  #result.show{animation:fade var(--dur) var(--ease);}
+  .gua-title{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px;}
+  .gua-title .big{font-family:var(--serif);font-size:23px;font-weight:600;letter-spacing:3px;color:var(--gold);}
+  .gua-sub{font-family:var(--sans);color:var(--ink-dim);}
+  .gua-text{font-family:var(--serif);font-size:15.5px;line-height:1.95;}
+  .gua-text .bai{font-family:var(--sans);color:var(--ink-dim);font-size:13px;margin-top:4px;line-height:1.7;}
+  .xiang{font-family:var(--serif);color:var(--gold-dim);}
+  .sect{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:3px;color:var(--gold);}
+  .divider{background:linear-gradient(90deg,transparent,var(--line),transparent);height:1px;margin:18px 0;}
+  .rule{background:var(--panel2);border-left:3px solid var(--gold);border-radius:var(--r-md);padding:12px 14px;}
+  .rule .yaoline .bai,.detailbox .d-para{font-family:var(--serif);}
+  .detailbox{font-size:14px;}
+  .detailbox .d-para{line-height:2;}
+  .detailbox .d-cat{border-radius:var(--r-md);}
+  .hist-item{border-radius:var(--r-md);transition:var(--dur);}
+  .hist-item:hover{border-color:var(--gold-dim);background:rgba(201,165,90,.06);}
+  .casttime,.nj-table,.nj-state{font-variant-numeric:tabular-nums;}
+  .nj-table td,.nj-table th{padding:6px 4px;}
+  .najia-guide,.najia-verdict{border-radius:var(--r-md);}
+  .btn-copy{display:inline-flex;align-items:center;gap:8px;min-height:48px;border-radius:var(--r-md);background:linear-gradient(180deg,var(--gold-bright),#a9863f);color:#1c1710;font-weight:600;letter-spacing:.5px;box-shadow:0 5px 16px rgba(201,165,90,.24);transition:filter var(--dur),transform .1s;}
+  .btn-copy:hover{filter:brightness(1.06);}
+  .btn-copy:active{transform:translateY(1px);}
+  .btn-copy .ic{stroke:currentColor;fill:none;stroke-width:2;flex:0 0 auto;}
+  .toast{background:rgba(24,20,16,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--gold-dim);border-radius:22px;}
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+  }
 </style>
 </head>
 <body>
@@ -228,7 +310,7 @@
       <div class="najia-legend" id="najiaLegend"></div>
     </details>
 
-    <div class="copy-row"><button class="btn-copy" id="copyBtn" onclick="copyReading()"></button></div>
+    <div class="copy-row"><button class="btn-copy" id="copyBtn" onclick="copyReading()"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span id="copyBtnText"></span></button></div>
   </div>
 
   <div class="card">
@@ -285,7 +367,7 @@ const T = {
    relTitle:"延伸卦象",
    rel:{ hu:["互卦","事情发展的中间过程与内情"], cuo:["错卦","事情的反面、对立的可能"], zong:["综卦","换位·从对方或反向看"] },
    methodLabel:"起卦法", methodCoin:"铜钱法", methodYarrow:"蓍草法",
-   copyBtn:"📋 复制卦象（拿去问 AI 解读）", copied:"已复制到剪贴板", copyFail:"复制失败，请手动选择文本",
+   copyBtn:"复制卦象（拿去问 AI 解读）", copied:"已复制到剪贴板", copyFail:"复制失败，请手动选择文本",
    histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
    methodSummary:"起卦规则说明",
    transBtn:"EN · English",
@@ -314,7 +396,7 @@ const T = {
    relTitle:"Related hexagrams",
    rel:{ hu:["Nuclear","the inner development / middle phase"], cuo:["Opposite","the reverse side / opposite possibility"], zong:["Reversed","the other side's / inverted view"] },
    methodLabel:"Method", methodCoin:"Coin", methodYarrow:"Yarrow",
-   copyBtn:"📋 Copy the cast (to ask an AI)", copied:"Copied to clipboard", copyFail:"Copy failed — please select the text manually",
+   copyBtn:"Copy the cast (to ask an AI)", copied:"Copied to clipboard", copyFail:"Copy failed — please select the text manually",
    histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
    methodSummary:"How the method works",
    transBtn:"中 · 中文",
@@ -798,7 +880,7 @@ function applyLang(){
   document.getElementById('methodLabel').textContent=L.methodLabel;
   document.getElementById('segCoin').textContent=L.methodCoin;
   document.getElementById('segYarrow').textContent=L.methodYarrow;
-  document.getElementById('copyBtn').textContent=L.copyBtn;
+  document.getElementById('copyBtnText').textContent=L.copyBtn;
   if(yaos.length===0) document.getElementById('status').textContent=L.start;
   labelYaoIdx();
   buildCats();
