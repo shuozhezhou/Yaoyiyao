@@ -229,6 +229,47 @@
   .btn-copy:active{transform:translateY(1px);}
   .btn-copy .ic{stroke:currentColor;fill:none;stroke-width:2;flex:0 0 auto;}
   .toast{background:rgba(24,20,16,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--gold-dim);border-radius:22px;}
+  /* ===================== 水墨金尘 · 动态升级 ===================== */
+  #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .bg-ink{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bg-ink .ink{position:absolute;border-radius:50%;filter:blur(64px);}
+  .ink.b1{width:64vw;height:64vw;left:-16vw;top:-8vh;background:radial-gradient(circle,rgba(66,50,22,.55),transparent 70%);animation:drift1 28s ease-in-out infinite;}
+  .ink.b2{width:72vw;height:72vw;right:-22vw;bottom:-10vh;background:radial-gradient(circle,rgba(44,32,16,.5),transparent 70%);animation:drift2 34s ease-in-out infinite;}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(6%,4%) scale(1.08);}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-5%,-4%) scale(1.1);}}
+  .taiji{position:fixed;top:-26px;left:50%;width:280px;height:280px;transform:translateX(-50%);opacity:.055;z-index:0;pointer-events:none;animation:spin 90s linear infinite;}
+  @keyframes spin{to{transform:translateX(-50%) rotate(360deg);}}
+  .app{position:relative;z-index:1;}
+  /* 爻线 · 毛笔落墨 */
+  .yao .bar{transform-origin:left center;}
+  .yao.on .bar{animation:brush .55s var(--ease) both;}
+  @keyframes brush{0%{transform:scaleX(0);filter:brightness(1.9) drop-shadow(0 0 7px var(--gold));}55%{filter:brightness(1.4) drop-shadow(0 0 6px var(--gold));}100%{transform:scaleX(1);filter:none;}}
+  /* 铜钱 · 金墨涟漪 */
+  .coins{position:relative;}
+  .coin-ripple{position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%);border:1px solid var(--gold);box-shadow:0 0 12px rgba(214,180,110,.5);opacity:.7;pointer-events:none;animation:ripple .66s ease-out forwards;}
+  @keyframes ripple{to{width:230px;height:230px;opacity:0;border-color:rgba(214,180,110,.12);}}
+  /* 主按钮 · 金箔流光 */
+  .btn-main,.btn-copy{position:relative;overflow:hidden;}
+  .btn-main::after,.btn-copy::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,246,222,.55),transparent);transform:skewX(-20deg);pointer-events:none;}
+  .btn-main:hover:not(:disabled)::after,.btn-copy:hover::after{animation:sheen 1.05s ease;}
+  @keyframes sheen{from{left:-70%;}to{left:130%;}}
+  /* 结果 · 水墨晕染错落入场 */
+  #result.show{animation:rfade .4s ease both;}
+  @keyframes rfade{from{opacity:0;}to{opacity:1;}}
+  #result.show>*{animation:inkin .5s var(--ease) both;}
+  @keyframes inkin{0%{opacity:0;transform:translateY(10px);filter:blur(6px);}100%{opacity:1;transform:none;filter:blur(0);}}
+  #result.show>*:nth-child(1){animation-delay:.02s;}
+  #result.show>*:nth-child(2){animation-delay:.07s;}
+  #result.show>*:nth-child(3){animation-delay:.12s;}
+  #result.show>*:nth-child(4){animation-delay:.17s;}
+  #result.show>*:nth-child(5){animation-delay:.22s;}
+  #result.show>*:nth-child(6){animation-delay:.27s;}
+  #result.show>*:nth-child(7){animation-delay:.32s;}
+  #result.show>*:nth-child(n+8){animation-delay:.37s;}
+  /* 卡片入场（轻微晕染） */
+  .card{animation:cardin .5s var(--ease) both;}
+  @keyframes cardin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
   }
@@ -237,6 +278,14 @@
 <body>
 <button class="btn-lang" id="transBtn" onclick="toggleLang()"></button>
 <div class="toast" id="toast"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="bg-ink" aria-hidden="true"><span class="ink b1"></span><span class="ink b2"></span></div>
+<svg class="taiji" viewBox="0 0 100 100" aria-hidden="true">
+  <circle cx="50" cy="50" r="48" fill="none" stroke="#cda65f" stroke-width="1"/>
+  <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2 Z" fill="#cda65f"/>
+  <circle cx="50" cy="26" r="7" fill="#0f0c08"/>
+  <circle cx="50" cy="74" r="7" fill="#cda65f"/>
+</svg>
 <div class="app">
   <header>
     <h1>爻 一 爻</h1>
@@ -2377,6 +2426,7 @@ function setMethod(m){ method=m; document.getElementById('segCoin').classList.to
 /* ---------- 起卦 ---------- */
 function toss(){
   if(yaos.length>=6) return;
+  if(window.spawnCoinFx) spawnCoinFx();
   const coins=[...document.querySelectorAll('.coin')];
   let faces;
   if(method==='yarrow'){ faces=facesForValue(drawYarrow()); }
@@ -2866,6 +2916,26 @@ if(typeof YI==='undefined'){
   document.getElementById('dataWarn').style.display='block';
   document.getElementById('dataWarn').textContent='⚠ 未找到 yijing-data.js（卦辞数据）。卦象仍可用。';
 }
+</script>
+<script>
+/* 水墨金尘 · 背景粒子 + 铜钱金墨涟漪 */
+(function(){
+  const c=document.getElementById('fx'); if(!c) return;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const x=c.getContext('2d'); let w,h,ps=[];
+  function rs(){w=c.width=innerWidth;h=c.height=innerHeight;}
+  function mk(){return{x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.6+0.6,vy:-(Math.random()*0.25+0.07),vx:(Math.random()-0.5)*0.14,a:Math.random()*0.4+0.15,t:Math.random()*6.28};}
+  function init(){ps=[];const n=reduce?0:Math.min(42,Math.round(innerWidth/24));for(let i=0;i<n;i++)ps.push(mk());}
+  function draw(){x.clearRect(0,0,w,h);for(const p of ps){p.y+=p.vy;p.x+=p.vx;p.t+=0.02;if(p.y<-12){p.y=h+12;p.x=Math.random()*w;}const a=p.a*(0.55+0.45*Math.sin(p.t));x.beginPath();x.arc(p.x,p.y,p.r,0,6.29);x.fillStyle='rgba(214,180,110,'+a.toFixed(3)+')';x.shadowColor='rgba(230,195,124,'+a.toFixed(3)+')';x.shadowBlur=6;x.fill();}x.shadowBlur=0;requestAnimationFrame(draw);}
+  rs();init(); addEventListener('resize',()=>{rs();init();});
+  if(!reduce) draw();
+})();
+window.spawnCoinFx=function(){
+  const box=document.getElementById('coins'); if(!box) return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const r=document.createElement('span'); r.className='coin-ripple'; box.appendChild(r);
+  setTimeout(()=>r.remove(),700);
+};
 </script>
 </body>
 </html>
