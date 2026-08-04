@@ -270,6 +270,45 @@
   .card{animation:cardin .5s var(--ease) both;}
   @keyframes cardin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
+  /* ===== 皮肤切换按钮 & 宣纸纹理 ===== */
+  html{--fx-rgb:214,180,110;}
+  .btn-skin{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:200;background:rgba(24,20,16,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--sans);font-size:12px;letter-spacing:1px;padding:7px 13px;border-radius:20px;cursor:pointer;transition:var(--dur);}
+  .btn-skin:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .paper{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;mix-blend-mode:overlay;transition:opacity .4s;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:170px 170px;}
+
+  /* ===================== 皮肤：水墨古铜 ===================== */
+  html[data-skin="bronze"]{
+    --bg:#15110b; --panel:#1c1710; --panel2:#231d14; --line:#3a3223;
+    --gold:#a68a54; --gold-bright:#c1a468; --gold-dim:#6e5e3c;
+    --ink:#e6ddc9; --ink-dim:#9d917a; --yang:#c0a869; --yin:#8a8067;
+    --accent:#b23a2e; --fx-rgb:150,132,96;
+  }
+  html[data-skin="bronze"] body{background:radial-gradient(120% 60% at 50% -8%,#2a2013 0%,#15110b 60%);}
+  html[data-skin="bronze"] .paper{opacity:.5;}
+  html[data-skin="bronze"] header h1{background:none;color:var(--gold-bright);-webkit-text-fill-color:var(--gold-bright);letter-spacing:14px;}
+  html[data-skin="bronze"] .card{background:linear-gradient(180deg,#1e1810,#161009);border-color:#392f1f;box-shadow:0 10px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(214,196,150,.04);}
+  html[data-skin="bronze"] .gua-title .big{color:var(--accent);}   /* 卦名如朱砂印 */
+  html[data-skin="bronze"] .taiji [fill="#cda65f"]{fill:#8f6f3f;}
+  html[data-skin="bronze"] .ink.b1{background:radial-gradient(circle,rgba(74,52,24,.5),transparent 70%);}
+  html[data-skin="bronze"] .ink.b2{background:radial-gradient(circle,rgba(52,30,20,.45),transparent 70%);}
+  /* 哑光古铜按钮 / 选中态 */
+  html[data-skin="bronze"] .btn-main,html[data-skin="bronze"] .btn-copy,html[data-skin="bronze"] .cat.on,html[data-skin="bronze"] .seg-btn.on{background:linear-gradient(180deg,#b39a63,#7c6a40);color:#1a150c;}
+  html[data-skin="bronze"] .btn-main{box-shadow:0 4px 14px rgba(0,0,0,.42);}
+  html[data-skin="bronze"] .btn-copy{box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  /* 爻线：古铜 + 墨晕落笔 */
+  html[data-skin="bronze"] .bar{background:linear-gradient(180deg,#c1a468,#8a7444 55%,#6d5a33);box-shadow:0 1px 2px rgba(0,0,0,.55),inset 0 1px 0 rgba(226,206,150,.18);}
+  html[data-skin="bronze"] .yao.yin .bar{background:linear-gradient(180deg,#8d8368,#5f5844 55%,#4b4636);}
+  html[data-skin="bronze"] .yao.on .bar{animation:brushInk .6s var(--ease) both;}
+  @keyframes brushInk{0%{transform:scaleX(0);filter:brightness(1.25) drop-shadow(0 0 6px rgba(0,0,0,.7));}100%{transform:scaleX(1);filter:none;}}
+  /* 铜钱：方孔古币 */
+  html[data-skin="bronze"] .coin{position:relative;font-family:var(--serif);font-size:15px;color:#d8cba3;border:2px solid #6f6142;background:radial-gradient(circle at 38% 32%,#565031,#2c261b 80%);box-shadow:inset 0 2px 5px rgba(226,204,150,.12),inset 0 -3px 7px rgba(0,0,0,.62),0 4px 10px rgba(0,0,0,.5);}
+  html[data-skin="bronze"] .coin::before{content:"";position:absolute;left:50%;top:50%;width:23px;height:23px;transform:translate(-50%,-50%);background:radial-gradient(circle,#241f16,#14100a);border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 3px rgba(0,0,0,.75);}
+  html[data-skin="bronze"] .coin.yang{border-color:#8f7a49;color:#ecdcac;}
+  html[data-skin="bronze"] .coin.yin{border-color:#5c5240;color:#b8ac8c;}
+  /* 铜钱涟漪转墨色 */
+  html[data-skin="bronze"] .coin-ripple{border-color:#8f6f3f;box-shadow:0 0 12px rgba(120,96,56,.5);}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
   }
@@ -277,9 +316,11 @@
 </head>
 <body>
 <button class="btn-lang" id="transBtn" onclick="toggleLang()"></button>
+<button class="btn-skin" id="skinBtn" onclick="toggleSkin()"></button>
 <div class="toast" id="toast"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <div class="bg-ink" aria-hidden="true"><span class="ink b1"></span><span class="ink b2"></span></div>
+<div class="paper" aria-hidden="true"></div>
 <svg class="taiji" viewBox="0 0 100 100" aria-hidden="true">
   <circle cx="50" cy="50" r="48" fill="none" stroke="#cda65f" stroke-width="1"/>
   <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2 Z" fill="#cda65f"/>
@@ -416,6 +457,7 @@ const T = {
    relTitle:"延伸卦象",
    rel:{ hu:["互卦","事情发展的中间过程与内情"], cuo:["错卦","事情的反面、对立的可能"], zong:["综卦","换位·从对方或反向看"] },
    methodLabel:"起卦法", methodCoin:"铜钱法", methodYarrow:"蓍草法",
+   skinName:{classic:"典雅金",bronze:"水墨古铜"},
    copyBtn:"复制卦象（拿去问 AI 解读）", copied:"已复制到剪贴板", copyFail:"复制失败，请手动选择文本",
    histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
    methodSummary:"起卦规则说明",
@@ -445,6 +487,7 @@ const T = {
    relTitle:"Related hexagrams",
    rel:{ hu:["Nuclear","the inner development / middle phase"], cuo:["Opposite","the reverse side / opposite possibility"], zong:["Reversed","the other side's / inverted view"] },
    methodLabel:"Method", methodCoin:"Coin", methodYarrow:"Yarrow",
+   skinName:{classic:"Classic Gold",bronze:"Ink Bronze"},
    copyBtn:"Copy the cast (to ask an AI)", copied:"Copied to clipboard", copyFail:"Copy failed — please select the text manually",
    histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
    methodSummary:"How the method works",
@@ -462,6 +505,7 @@ let lang = 'zh';
 let yaos = [];          // 每爻 {v}
 let lastCast = null;    // {ben:[1/0*6], ci:[], benNum, bianNum, q, cat, t}
 let cat = 'general';    // 当前所选解读类别
+let skin = localStorage.getItem('yaoyiyao_skin')||'classic';  // 皮肤
 
 /* ---------- 起卦法（铜钱法 / 蓍草法） ---------- */
 let method='coin';
@@ -931,6 +975,7 @@ function applyLang(){
   document.getElementById('segCoin').textContent=L.methodCoin;
   document.getElementById('segYarrow').textContent=L.methodYarrow;
   document.getElementById('copyBtnText').textContent=L.copyBtn;
+  {const _sb=document.getElementById('skinBtn'); if(_sb)_sb.textContent=L.skinName[skin];}
   if(yaos.length===0) document.getElementById('status').textContent=L.start;
   labelYaoIdx();
   buildCats();
@@ -938,6 +983,15 @@ function applyLang(){
   if(lastCast) renderResult();
 }
 function toggleLang(){lang = lang==='zh'?'en':'zh';applyLang();}
+
+/* ---------- 皮肤切换 ---------- */
+function applySkin(){
+  document.documentElement.dataset.skin=skin;
+  localStorage.setItem('yaoyiyao_skin',skin);
+  const sb=document.getElementById('skinBtn'); if(sb) sb.textContent=T[lang].skinName[skin];
+  if(window.fxReinit) window.fxReinit();
+}
+function toggleSkin(){ skin = (skin==='classic'?'bronze':'classic'); applySkin(); if(window.toast) toast(T[lang].skinName[skin]); }
 
 /* ---------- 重置 ---------- */
 function resetAll(){
@@ -956,6 +1010,7 @@ function resetAll(){
 
 /* ---------- init ---------- */
 applyLang();
+applySkin();
 renderHistory();
 if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
@@ -970,12 +1025,14 @@ if(typeof YI==='undefined'){
 (function(){
   const c=document.getElementById('fx'); if(!c) return;
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const x=c.getContext('2d'); let w,h,ps=[];
+  const x=c.getContext('2d'); let w,h,ps=[],COL='214,180,110';
+  function readCol(){const v=getComputedStyle(document.documentElement).getPropertyValue('--fx-rgb').trim(); if(v) COL=v;}
   function rs(){w=c.width=innerWidth;h=c.height=innerHeight;}
   function mk(){return{x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.6+0.6,vy:-(Math.random()*0.25+0.07),vx:(Math.random()-0.5)*0.14,a:Math.random()*0.4+0.15,t:Math.random()*6.28};}
-  function init(){ps=[];const n=reduce?0:Math.min(42,Math.round(innerWidth/24));for(let i=0;i<n;i++)ps.push(mk());}
-  function draw(){x.clearRect(0,0,w,h);for(const p of ps){p.y+=p.vy;p.x+=p.vx;p.t+=0.02;if(p.y<-12){p.y=h+12;p.x=Math.random()*w;}const a=p.a*(0.55+0.45*Math.sin(p.t));x.beginPath();x.arc(p.x,p.y,p.r,0,6.29);x.fillStyle='rgba(214,180,110,'+a.toFixed(3)+')';x.shadowColor='rgba(230,195,124,'+a.toFixed(3)+')';x.shadowBlur=6;x.fill();}x.shadowBlur=0;requestAnimationFrame(draw);}
+  function init(){readCol();ps=[];const n=reduce?0:Math.min(42,Math.round(innerWidth/24));for(let i=0;i<n;i++)ps.push(mk());}
+  function draw(){x.clearRect(0,0,w,h);for(const p of ps){p.y+=p.vy;p.x+=p.vx;p.t+=0.02;if(p.y<-12){p.y=h+12;p.x=Math.random()*w;}const a=(p.a*(0.55+0.45*Math.sin(p.t))).toFixed(3);x.beginPath();x.arc(p.x,p.y,p.r,0,6.29);x.fillStyle='rgba('+COL+','+a+')';x.shadowColor='rgba('+COL+','+a+')';x.shadowBlur=6;x.fill();}x.shadowBlur=0;requestAnimationFrame(draw);}
   rs();init(); addEventListener('resize',()=>{rs();init();});
+  window.fxReinit=function(){readCol();};
   if(!reduce) draw();
 })();
 window.spawnCoinFx=function(){
