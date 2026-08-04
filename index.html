@@ -277,37 +277,61 @@
   .paper{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;mix-blend-mode:overlay;transition:opacity .4s;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:170px 170px;}
 
-  /* ===================== 皮肤：水墨古铜 ===================== */
-  html[data-skin="bronze"]{
-    --bg:#15110b; --panel:#1c1710; --panel2:#231d14; --line:#3a3223;
-    --gold:#a68a54; --gold-bright:#c1a468; --gold-dim:#6e5e3c;
-    --ink:#e6ddc9; --ink-dim:#9d917a; --yang:#c0a869; --yin:#8a8067;
-    --accent:#b23a2e; --fx-rgb:150,132,96;
+  /* ===================== 皮肤：黑白水墨（宣纸·山水·锦鲤） ===================== */
+  html[data-skin="ink"]{
+    --bg:#e7dfce; --panel:rgba(248,243,233,.90); --panel2:rgba(238,231,217,.92); --line:#c8bda6;
+    --gold:#4a4238; --gold-bright:#2c2620; --gold-dim:#8a7f66;
+    --ink:#2b2620; --ink-dim:#6d6555; --yang:#2f2a22; --yin:#5f584a;
+    --accent:#a83226; --fx-rgb:110,100,84; --shadow:0 8px 26px rgba(70,58,40,.14);
   }
-  html[data-skin="bronze"] body{background:radial-gradient(120% 60% at 50% -8%,#2a2013 0%,#15110b 60%);}
-  html[data-skin="bronze"] .paper{opacity:.5;}
-  html[data-skin="bronze"] header h1{background:none;color:var(--gold-bright);-webkit-text-fill-color:var(--gold-bright);letter-spacing:14px;}
-  html[data-skin="bronze"] .card{background:linear-gradient(180deg,#1e1810,#161009);border-color:#392f1f;box-shadow:0 10px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(214,196,150,.04);}
-  html[data-skin="bronze"] .gua-title .big{color:var(--accent);}   /* 卦名如朱砂印 */
-  html[data-skin="bronze"] .taiji [fill="#cda65f"]{fill:#8f6f3f;}
-  html[data-skin="bronze"] .ink.b1{background:radial-gradient(circle,rgba(74,52,24,.5),transparent 70%);}
-  html[data-skin="bronze"] .ink.b2{background:radial-gradient(circle,rgba(52,30,20,.45),transparent 70%);}
-  /* 哑光古铜按钮 / 选中态 */
-  html[data-skin="bronze"] .btn-main,html[data-skin="bronze"] .btn-copy,html[data-skin="bronze"] .cat.on,html[data-skin="bronze"] .seg-btn.on{background:linear-gradient(180deg,#b39a63,#7c6a40);color:#1a150c;}
-  html[data-skin="bronze"] .btn-main{box-shadow:0 4px 14px rgba(0,0,0,.42);}
-  html[data-skin="bronze"] .btn-copy{box-shadow:0 4px 14px rgba(0,0,0,.4);}
-  /* 爻线：古铜 + 墨晕落笔 */
-  html[data-skin="bronze"] .bar{background:linear-gradient(180deg,#c1a468,#8a7444 55%,#6d5a33);box-shadow:0 1px 2px rgba(0,0,0,.55),inset 0 1px 0 rgba(226,206,150,.18);}
-  html[data-skin="bronze"] .yao.yin .bar{background:linear-gradient(180deg,#8d8368,#5f5844 55%,#4b4636);}
-  html[data-skin="bronze"] .yao.on .bar{animation:brushInk .6s var(--ease) both;}
-  @keyframes brushInk{0%{transform:scaleX(0);filter:brightness(1.25) drop-shadow(0 0 6px rgba(0,0,0,.7));}100%{transform:scaleX(1);filter:none;}}
-  /* 铜钱：方孔古币 */
-  html[data-skin="bronze"] .coin{position:relative;font-family:var(--serif);font-size:15px;color:#d8cba3;border:2px solid #6f6142;background:radial-gradient(circle at 38% 32%,#565031,#2c261b 80%);box-shadow:inset 0 2px 5px rgba(226,204,150,.12),inset 0 -3px 7px rgba(0,0,0,.62),0 4px 10px rgba(0,0,0,.5);}
-  html[data-skin="bronze"] .coin::before{content:"";position:absolute;left:50%;top:50%;width:23px;height:23px;transform:translate(-50%,-50%);background:radial-gradient(circle,#241f16,#14100a);border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 3px rgba(0,0,0,.75);}
-  html[data-skin="bronze"] .coin.yang{border-color:#8f7a49;color:#ecdcac;}
-  html[data-skin="bronze"] .coin.yin{border-color:#5c5240;color:#b8ac8c;}
-  /* 铜钱涟漪转墨色 */
-  html[data-skin="bronze"] .coin-ripple{border-color:#8f6f3f;box-shadow:0 0 12px rgba(120,96,56,.5);}
+  html[data-skin="ink"] body{background:radial-gradient(120% 72% at 50% 2%,#efe8d8 0%,#e3dac8 62%);color:var(--ink);}
+  html[data-skin="ink"] #fx{opacity:0;}
+  html[data-skin="ink"] .taiji,html[data-skin="ink"] .bg-ink{opacity:0;}
+  html[data-skin="ink"] .paper{opacity:.4;mix-blend-mode:multiply;}
+  html[data-skin="ink"] header h1{background:none;color:#2b2620;-webkit-text-fill-color:#2b2620;letter-spacing:13px;}
+  html[data-skin="ink"] header p{color:#6d6555;}
+  html[data-skin="ink"] .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border-color:var(--line);box-shadow:0 8px 24px rgba(70,58,40,.14);}
+  html[data-skin="ink"] .gua-title .big{color:var(--accent);}          /* 卦名如朱砂印 */
+  html[data-skin="ink"] .status,html[data-skin="ink"] .casttime{color:#6d6555;}
+  /* 焦墨墨块按钮 / 选中态：paper 字 */
+  html[data-skin="ink"] .btn-main,html[data-skin="ink"] .btn-copy,html[data-skin="ink"] .cat.on,html[data-skin="ink"] .seg-btn.on{background:linear-gradient(180deg,#3f382d,#241f17);color:#efe7d6;}
+  html[data-skin="ink"] .btn-main{box-shadow:0 5px 16px rgba(50,40,26,.28);}
+  html[data-skin="ink"] .btn-copy{box-shadow:0 5px 16px rgba(50,40,26,.26);}
+  html[data-skin="ink"] .btn-reset{border-color:#b7ab90;color:#5a5142;}
+  html[data-skin="ink"] .btn-lang,html[data-skin="ink"] .btn-skin{background:rgba(250,246,237,.82);border-color:#b7ab90;color:#4a4238;}
+  html[data-skin="ink"] .cat{border-color:#c3b89f;color:#5a5142;}
+  html[data-skin="ink"] .seg{border-color:#c3b89f;}
+  html[data-skin="ink"] .btn-main::after,html[data-skin="ink"] .btn-copy::after{background:linear-gradient(100deg,transparent,rgba(255,250,235,.35),transparent);}
+  /* 爻线：焦墨笔画 */
+  html[data-skin="ink"] .bar{background:linear-gradient(180deg,#3b342a,#241f18 60%,#171310);box-shadow:0 1px 2px rgba(40,32,20,.3);}
+  html[data-skin="ink"] .yao.yin .bar{background:linear-gradient(180deg,#4c4537,#2c271f);}
+  html[data-skin="ink"] .yao.on .bar{animation:brushInk .6s var(--ease) both;}
+  html[data-skin="ink"] .yao .mark{color:var(--accent);}
+  @keyframes brushInk{0%{transform:scaleX(0);filter:brightness(1.15) drop-shadow(0 0 6px rgba(30,24,16,.5));}100%{transform:scaleX(1);filter:none;}}
+  /* 铜钱：深色古铜方孔钱 */
+  html[data-skin="ink"] .coin{position:relative;font-family:var(--serif);font-size:15px;color:#e7dab0;border:2px solid #453a25;background:radial-gradient(circle at 38% 32%,#5a4d30,#231c11 82%);box-shadow:inset 0 2px 5px rgba(232,212,160,.14),inset 0 -3px 7px rgba(0,0,0,.6),0 5px 12px rgba(60,46,26,.4);}
+  html[data-skin="ink"] .coin::before{content:"";position:absolute;left:50%;top:50%;width:23px;height:23px;transform:translate(-50%,-50%);background:radial-gradient(circle,#231d13,#120e08);border:1px solid rgba(0,0,0,.5);box-shadow:inset 0 1px 3px rgba(0,0,0,.8);}
+  html[data-skin="ink"] .coin.yang{border-color:#6f5c34;color:#f0e2b4;}
+  html[data-skin="ink"] .coin.yin{border-color:#3f3623;color:#c9bc95;}
+  html[data-skin="ink"] .coin-ripple{border-color:#5a4d30;box-shadow:0 0 12px rgba(70,55,30,.4);}
+  /* ---- 山水 + 锦鲤 场景 ---- */
+  .scene{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .6s;}
+  html[data-skin="ink"] .scene{opacity:1;}
+  .mountains{position:absolute;top:0;left:0;width:100%;height:42vh;filter:blur(1px);}
+  .mountains .m1{fill:#6b6353;opacity:.5;}
+  .mountains .m2{fill:#837b69;opacity:.4;}
+  .mountains .m3{fill:#9a927e;opacity:.28;}
+  .koi-wrap{position:absolute;bottom:6vh;left:0;will-change:transform;animation:swimA 42s linear infinite;}
+  .koi-wrap.b{bottom:1.5vh;animation:swimB 54s linear infinite;}
+  .koi{width:120px;display:block;animation:bob 5.5s ease-in-out infinite;}
+  .koi-wrap.b .koi{width:86px;animation-duration:6.8s;}
+  .koi .koi-body{fill:#544c3e;opacity:.85;}
+  .koi .koi-tail,.koi .koi-fin{fill:#6f6656;opacity:.5;}
+  .koi .koi-patch{fill:#a83a2b;opacity:.55;}
+  .koi .koi-eye{fill:#241f17;}
+  @keyframes swimA{from{transform:translateX(-26vw);}to{transform:translateX(126vw);}}
+  @keyframes swimB{from{transform:translateX(126vw) scaleX(-1);}to{transform:translateX(-30vw) scaleX(-1);}}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-9px) rotate(2deg);}}
 
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
@@ -321,6 +345,15 @@
 <canvas id="fx" aria-hidden="true"></canvas>
 <div class="bg-ink" aria-hidden="true"><span class="ink b1"></span><span class="ink b2"></span></div>
 <div class="paper" aria-hidden="true"></div>
+<div class="scene" aria-hidden="true">
+  <svg class="mountains" viewBox="0 0 400 170" preserveAspectRatio="xMidYMax slice">
+    <path class="m3" d="M0 120 Q70 74 130 100 T250 92 T400 108 V170 H0 Z"/>
+    <path class="m2" d="M0 138 Q90 100 160 122 T310 112 T400 126 V170 H0 Z"/>
+    <path class="m1" d="M0 152 Q110 126 210 142 T400 140 V170 H0 Z"/>
+  </svg>
+  <div class="koi-wrap a"><svg class="koi" viewBox="0 0 120 60"><path class="koi-tail" d="M84 30 C98 18 112 16 118 22 C111 27 111 33 118 38 C112 44 98 42 84 30 Z"/><path class="koi-fin" d="M52 40 C58 50 66 52 70 46 C64 44 60 40 58 36 Z"/><path class="koi-body" d="M16 30 C28 15 66 14 86 26 C92 29 92 31 86 34 C66 46 28 45 16 30 Z"/><path class="koi-patch" d="M38 23 C50 19 62 22 58 30 C54 37 42 36 38 30 Z"/><circle class="koi-eye" cx="30" cy="27" r="1.8"/></svg></div>
+  <div class="koi-wrap b"><svg class="koi" viewBox="0 0 120 60"><path class="koi-tail" d="M84 30 C98 18 112 16 118 22 C111 27 111 33 118 38 C112 44 98 42 84 30 Z"/><path class="koi-fin" d="M52 40 C58 50 66 52 70 46 C64 44 60 40 58 36 Z"/><path class="koi-body" d="M16 30 C28 15 66 14 86 26 C92 29 92 31 86 34 C66 46 28 45 16 30 Z"/><path class="koi-patch" d="M38 23 C50 19 62 22 58 30 C54 37 42 36 38 30 Z"/><circle class="koi-eye" cx="30" cy="27" r="1.8"/></svg></div>
+</div>
 <svg class="taiji" viewBox="0 0 100 100" aria-hidden="true">
   <circle cx="50" cy="50" r="48" fill="none" stroke="#cda65f" stroke-width="1"/>
   <path d="M50 2 A48 48 0 0 1 50 98 A24 24 0 0 1 50 50 A24 24 0 0 0 50 2 Z" fill="#cda65f"/>
@@ -2409,7 +2442,7 @@ const T = {
    relTitle:"延伸卦象",
    rel:{ hu:["互卦","事情发展的中间过程与内情"], cuo:["错卦","事情的反面、对立的可能"], zong:["综卦","换位·从对方或反向看"] },
    methodLabel:"起卦法", methodCoin:"铜钱法", methodYarrow:"蓍草法",
-   skinName:{classic:"典雅金",bronze:"水墨古铜"},
+   skinName:{classic:"典雅金",ink:"黑白水墨"},
    copyBtn:"复制卦象（拿去问 AI 解读）", copied:"已复制到剪贴板", copyFail:"复制失败，请手动选择文本",
    histTitle:"卦例记录", clear:"清空", histEmpty:"暂无记录。每完成一卦会自动保存于本机。",
    methodSummary:"起卦规则说明",
@@ -2439,7 +2472,7 @@ const T = {
    relTitle:"Related hexagrams",
    rel:{ hu:["Nuclear","the inner development / middle phase"], cuo:["Opposite","the reverse side / opposite possibility"], zong:["Reversed","the other side's / inverted view"] },
    methodLabel:"Method", methodCoin:"Coin", methodYarrow:"Yarrow",
-   skinName:{classic:"Classic Gold",bronze:"Ink Bronze"},
+   skinName:{classic:"Classic Gold",ink:"Ink Wash"},
    copyBtn:"Copy the cast (to ask an AI)", copied:"Copied to clipboard", copyFail:"Copy failed — please select the text manually",
    histTitle:"History", clear:"Clear", histEmpty:"No records yet. Each finished cast is saved on this device.",
    methodSummary:"How the method works",
@@ -2458,6 +2491,7 @@ let yaos = [];          // 每爻 {v}
 let lastCast = null;    // {ben:[1/0*6], ci:[], benNum, bianNum, q, cat, t}
 let cat = 'general';    // 当前所选解读类别
 let skin = localStorage.getItem('yaoyiyao_skin')||'classic';  // 皮肤
+if(skin==='bronze') skin='ink';
 
 /* ---------- 起卦法（铜钱法 / 蓍草法） ---------- */
 let method='coin';
@@ -2943,7 +2977,7 @@ function applySkin(){
   const sb=document.getElementById('skinBtn'); if(sb) sb.textContent=T[lang].skinName[skin];
   if(window.fxReinit) window.fxReinit();
 }
-function toggleSkin(){ skin = (skin==='classic'?'bronze':'classic'); applySkin(); if(window.toast) toast(T[lang].skinName[skin]); }
+function toggleSkin(){ skin = (skin==='classic'?'ink':'classic'); applySkin(); if(window.toast) toast(T[lang].skinName[skin]); }
 
 /* ---------- 重置 ---------- */
 function resetAll(){
